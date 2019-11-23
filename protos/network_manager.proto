@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+service NetworkManager {
+    rpc GetConnectionList (GetConnectionListRequest) returns (GetConnectionListResponse) {}
+}
+
+message GetConnectionListRequest {
+    string node_ip = 1;
+}
+
+message GetConnectionListResponse {
+    repeated string node_ip = 1;
+}
