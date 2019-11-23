@@ -17,7 +17,7 @@ import network_manager_pb2
 import network_manager_pb2_grpc
 
 
-connection_list = []
+connection_list = [machine_info.get_ip()]  # add yourself to the list
 
 
 class Greeter(greet_pb2_grpc.GreeterServicer):
