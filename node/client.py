@@ -14,10 +14,10 @@ import network_manager_pb2_grpc
 connection_list = []
 
 
-def greet(channel):
+def greet(ip, channel):
     greeter_stub = greet_pb2_grpc.GreeterStub(channel)
     response = greeter_stub.SayHello(greet_pb2.HelloRequest(name=machine_info.get_ip()))
-    logger.info("Response from " + machine_info.get_ip() + ": " + response.message)
+    logger.info("Response from " + ip + ": " + response.message)
 
 
 def get_connection_list():
@@ -32,7 +32,7 @@ def greet_the_team():
     for ip in connection_list:
         if ip != machine_info.get_ip():
             chn = grpc.insecure_channel(ip + ":" + str(node_port))
-            greet(chn)
+            greet(ip, chn)
 
 
 if __name__ == '__main__':
@@ -43,6 +43,6 @@ if __name__ == '__main__':
     node_ip = "10.0.0.2"
     node_port = 2750
     channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
-    greet(channel)
+    greet(node_ip, channel)
     get_connection_list()
     greet_the_team()
