@@ -41,7 +41,7 @@ def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
     greet_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
     network_manager_pb2_grpc.add_NetworkManagerServicer_to_server(NetworkManager(), server)
-    server.add_insecure_port(machine_info.get_ip() + ":" + str(config["port"]))
+    server.add_insecure_port("[::]:" + str(config["port"]))
     logger.info("Server starting at port " + str(config["port"]))
     server.start()
     server.wait_for_termination()
