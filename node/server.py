@@ -23,6 +23,7 @@ import machine_stats_pb2_grpc
 connection_list = []  # add yourself to the list
 file = open("connection_list.txt", "w")
 file.write(machine_info.get_ip())
+file.close()
 
 
 class Greeter(greet_pb2_grpc.GreeterServicer):
@@ -30,6 +31,7 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
     def SayHello(self, request, context):
         global connection_list
         logger.info("Greetings received from " + request.name)
+        file = open("connection_list.txt", "w")
         connection_list = file.readlines()
         if request.name not in connection_list:
             file.write(request.name)

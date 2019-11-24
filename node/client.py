@@ -12,7 +12,6 @@ import network_manager_pb2
 import network_manager_pb2_grpc
 
 connection_list = []
-file = open("connection_list.txt", "r")
 
 
 def greet(ip, channel):
@@ -31,11 +30,13 @@ def get_connection_list():
 
 def greet_the_team():
     global connection_list
+    file = open("connection_list.txt", "r")
     connection_list = file.readlines()
     for ip in connection_list:
         if ip != machine_info.get_ip():
             chn = grpc.insecure_channel(ip + ":" + str(node_port))
             greet(ip, chn)
+    file.close()
 
 
 if __name__ == '__main__':
