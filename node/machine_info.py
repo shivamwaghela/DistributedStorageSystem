@@ -1,6 +1,7 @@
 """Information about the host machine"""
 
 import socket
+from psutil import cpu_percent, virtual_memory, disk_usage
 
 
 def get_ip():
@@ -14,3 +15,15 @@ def get_ip():
         s.close()
 
     return IP
+
+
+def get_my_cpu_usage():
+    return cpu_percent(interval=5)
+
+
+def get_my_memory_usage():
+    return virtual_memory().available
+
+
+def get_my_disk_usage():
+    return disk_usage("/").free
