@@ -37,7 +37,6 @@ def greet_the_team():
         if ip != machine_info.get_ip():
             chn = grpc.insecure_channel(ip + ":" + str(node_port))
             greet(ip, chn)
-    file.close()
 
 
 if __name__ == '__main__':
