@@ -16,7 +16,10 @@ connection_list = []
 
 def greet(ip, channel):
     greeter_stub = greet_pb2_grpc.GreeterStub(channel)
-    response = greeter_stub.SayHello(greet_pb2.HelloRequest(name=machine_info.get_ip()))
+    response = greeter_stub.SayHello(greet_pb2.HelloRequest(name=machine_info.get_ip(),
+                                                            cpu_usage=machine_info.get_my_cpu_usage(),
+                                                            memory_usage=machine_info.get_my_memory_usage(),
+                                                            disk_usage=machine_info.get_my_memory_usage()))
     logger.info("Response from " + ip + ": " + response.message)
 
 
@@ -30,8 +33,6 @@ def get_connection_list():
 
 def greet_the_team():
     global connection_list
-    file = open("connection_list.txt", "r")
-    connection_list = file.readlines()
     for ip in connection_list:
         if ip != machine_info.get_ip():
             chn = grpc.insecure_channel(ip + ":" + str(node_port))
@@ -44,7 +45,7 @@ if __name__ == '__main__':
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(machine_info.get_ip())
     logger.setLevel(logging.DEBUG)
-    node_ip = "10.0.0.2"
+    node_ip = "10.0.0.4"
     node_port = 2750
     channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
     greet(node_ip, channel)

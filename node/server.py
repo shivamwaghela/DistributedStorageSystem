@@ -19,22 +19,32 @@ import network_manager_pb2_grpc
 import machine_stats_pb2
 import machine_stats_pb2_grpc
 
+cpu_usage = machine_info.get_my_cpu_usage()
+memory_usage = machine_info.get_my_memory_usage()
+hdd_usage = machine_info.get_my_disk_usage()
 
-connection_list = []  # add yourself to the list
-file = open("connection_list.txt", "w")
-file.write(machine_info.get_ip())
+connection_dict = {machine_info.get_ip(): {"cpu_usage": cpu_usage,
+                                           "memory_usage": memory_usage,
+                                           "disk_usage": hdd_usage}}
+file = open("connection_info.txt", "w+")
+file.write(str(connection_dict))
 file.close()
 
 
 class Greeter(greet_pb2_grpc.GreeterServicer):
 
     def SayHello(self, request, context):
-        global connection_list
+        global connection_dict
         logger.info("Greetings received from " + request.name)
-        file = open("connection_list.txt", "w")
-        connection_list = file.readlines()
-        if request.name not in connection_list:
-            file.write(request.name)
+        file = open("connection_info.txt", "r")
+        connection_dict = eval(file.readlines()[0])
+        file.close()
+
+        file = open("connection_info.txt", "w")
+        connection_dict[request.name] = {"cpu_usage": request.cpu_usage,
+                                         "memory_usage": request.memory_usage,
+                                         "disk_usage": request.disk_usage}
+        file.write(str(connection_dict))
         file.close()
         return greet_pb2.HelloReply(message='Hello, %s!' % request.name)
 
@@ -43,7 +53,7 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
 
     def GetConnectionList(self, request, context):
         logger.info("GetConnectionList called from: " + request.node_ip)
-        return network_manager_pb2.GetConnectionListResponse(node_ip=connection_list)
+        return network_manager_pb2.GetConnectionListResponse(node_ip=connection_dict.keys())
 
 
 class MachineState(machine_stats_pb2_grpc.MachineStatsServicer):
