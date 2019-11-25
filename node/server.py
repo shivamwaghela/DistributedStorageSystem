@@ -53,7 +53,7 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
 
     def GetConnectionList(self, request, context):
         logger.info("GetConnectionList called from: " + request.node_ip)
-        return network_manager_pb2.GetConnectionListResponse(node_ip=connection_dict.keys())
+        return network_manager_pb2.GetConnectionListResponse(node_ip=str(connection_dict))
 
 
 class MachineState(machine_stats_pb2_grpc.MachineStatsServicer):
