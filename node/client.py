@@ -24,16 +24,20 @@ def greet(ip, channel):
 
 
 def get_connection_list():
-    global connection_list
     network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
     response = network_manager_stub.GetConnectionList(network_manager_pb2
                                                       .GetConnectionListRequest(node_ip=machine_info.get_ip()))
-    connection_list = response.node_ip
+    connection_dict = response.node_ip
+    file = open("connection_info.txt", "w")
+    file.write(str(connection_dict))
+    file.close()
 
 
 def greet_the_team():
     global connection_list
-    for ip in connection_list:
+    file = open("connection_info.txt", "r")
+    connection_list = eval(eval(file.readlines()[0])[0])
+    for ip in connection_list.keys():
         if ip != machine_info.get_ip():
             chn = grpc.insecure_channel(ip + ":" + str(node_port))
             greet(ip, chn)

@@ -9,5 +9,5 @@ message GetConnectionListRequest {
 }
 
 message GetConnectionListResponse {
-    repeated string node_ip = 1;
+    string node_ip = 1;
 }
