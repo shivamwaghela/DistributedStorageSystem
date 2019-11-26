@@ -2,6 +2,7 @@ import grpc
 import logging
 import sys
 import os
+from yaml import load, Loader
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 
@@ -44,12 +45,13 @@ def greet_the_team():
 
 
 if __name__ == '__main__':
+    config = load(open('config.yaml'), Loader=Loader)
     logging.basicConfig(filename='client.log', filemode='w',
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(machine_info.get_ip())
     logger.setLevel(logging.DEBUG)
-    node_ip = "10.0.0.4"
-    node_port = 2750
+    node_ip = str(config["node_ip"])
+    node_port = str(config["port"])
     channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
     greet(node_ip, channel)
     get_connection_list()
