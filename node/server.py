@@ -33,12 +33,12 @@ file.close()
 #file = open("node_metadata.txt", "w+")
 
 node_meta_dict = {}
-
+my_pos = (0, 0)
 
 class Greeter(greet_pb2_grpc.GreeterServicer):
 
     def SayHello(self, request, context):
-        global connection_dict
+        global connection_dict, my_pos
         logger.info("Greetings received from " + request.name)
         file = open("connection_info.txt", "r")
         connection_dict = eval(file.readlines()[0])
@@ -96,8 +96,8 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
             network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
             response = network_manager_stub.GetNodeMetaData(network_manager_pb2.GetConnectionListRequest(
                                                 node_ip=machine_info.get_ip()))
-            print(response)
-            neighbor_meta_dict = eval(response)
+            print(eval(response.node_meta_dict))
+            neighbor_meta_dict = eval(response.node_meta_dict)
             neighbor_top = (x - 1, y)
             neighbor_bottom = (x + 1, y)
             neighbor_left = (x, y - 1)
@@ -169,7 +169,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(machine_info.get_ip())
     logger.setLevel(logging.DEBUG)
 
-    if sys.argv[1] == "0,0":
+    if len(sys.argv) > 2 and sys.argv[1] == "0,0":
         my_pos = (0, 0)
         node_meta_dict[my_pos] = machine_info.get_ip()
     serve()
