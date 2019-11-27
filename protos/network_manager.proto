@@ -2,6 +2,7 @@ syntax = "proto3";
 
 service NetworkManager {
     rpc GetConnectionList (GetConnectionListRequest) returns (GetConnectionListResponse) {}
+    rpc GetNodeMetaData (GetNodeMetaDataRequest) returns (GetNodeMetaDataResponse) {}
 }
 
 message GetConnectionListRequest {
@@ -10,4 +11,12 @@ message GetConnectionListRequest {
 
 message GetConnectionListResponse {
     string node_ip = 1;
+}
+
+message GetNodeMetaDataRequest {
+    string node_ip = 1;
+}
+
+message GetNodeMetaDataResponse {
+    string node_meta_dict = 1;
 }

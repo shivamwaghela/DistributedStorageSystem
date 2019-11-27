@@ -30,6 +30,10 @@ file = open("connection_info.txt", "w+")
 file.write(str(connection_dict))
 file.close()
 
+#file = open("node_metadata.txt", "w+")
+
+node_meta_dict = {}
+
 
 class Greeter(greet_pb2_grpc.GreeterServicer):
 
@@ -46,7 +50,73 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
                                          "disk_usage": request.disk_usage}
         file.write(str(connection_dict))
         file.close()
-        return greet_pb2.HelloReply(message='Hello, %s!' % request.name)
+
+        # figure out your available positions
+        x, y = my_pos
+        top = (x-1, y)
+        bottom = (x+1, y)
+        left = (x, y-1)
+        right = (x, y+1)
+        neighbor_pos = {"top": top, "bottom": bottom, "left": left, "right": right}
+        available_pos = {}
+        unavailable_pos = {}
+
+        for pos in neighbor_pos:
+            if neighbor_pos[pos] not in node_meta_dict:
+                available_pos[pos] = neighbor_pos[pos]
+            else:
+                unavailable_pos[pos] = neighbor_pos[pos]
+
+        # find position such that it maintains symmetry; check neighbor or neighbor's neighbor
+        if len(node_meta_dict.keys()) == 1:
+            new_node_pos = available_pos["right"]  # default to right position
+            return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos),
+                                        your_pos=str(new_node_pos))
+
+        # eliminate farthest position
+        if len(available_pos) == 3:
+            if top in unavailable_pos and top == unavailable_pos["top"]:
+                del available_pos["bottom"]
+            elif bottom in unavailable_pos and bottom == unavailable_pos["bottom"]:
+                del available_pos["top"]
+            elif left in unavailable_pos and left == unavailable_pos["left"]:
+                del available_pos["right"]
+            else:
+                del available_pos["left"]
+
+        # eliminate one more
+        new_node_pos = ()
+        if len(available_pos) == 2:
+            #  get neighbor's node metadata
+            # grpc
+            x, y = unavailable_pos[0] # neighbor
+            node_ip = request.name
+            node_port = 2750
+            channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
+            network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
+            response = network_manager_stub.GetNodeMetaData(network_manager_pb2.GetConnectionListRequest(
+                                                node_ip=machine_info.get_ip()))
+            print(response)
+            neighbor_meta_dict = eval(response)
+            neighbor_top = (x - 1, y)
+            neighbor_bottom = (x + 1, y)
+            neighbor_left = (x, y - 1)
+            neighbor_right = (x, y + 1)
+
+            if "top" in available_pos and neighbor_top in neighbor_meta_dict:
+                    new_node_pos = available_pos["top"]
+            if "bottom" in available_pos and neighbor_bottom in neighbor_meta_dict:
+                    new_node_pos = available_pos["bottom"]
+            if "left" in available_pos and neighbor_left in neighbor_meta_dict:
+                    new_node_pos = available_pos["left"]
+            if "right" in available_pos and neighbor_right in neighbor_meta_dict:
+                    new_node_pos = available_pos["right"]
+
+
+
+        # assign node a position
+        # send my position and the added node's position
+        return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos), your_pos=str(new_node_pos))
 
 
 class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
@@ -54,6 +124,11 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
     def GetConnectionList(self, request, context):
         logger.info("GetConnectionList called from: " + request.node_ip)
         return network_manager_pb2.GetConnectionListResponse(node_ip=str(connection_dict))
+
+    def GetNodeMetaData(self, request, context):
+        logger.info("GetNodeMetaData called from: " + request.node_ip)
+        return network_manager_pb2.GetNodeMetaDataResponse(node_meta_dict="{(0,0): '10.10.10.10'}")
+
 
 
 class MachineState(machine_stats_pb2_grpc.MachineStatsServicer):
@@ -93,4 +168,10 @@ if __name__ == "__main__":
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(machine_info.get_ip())
     logger.setLevel(logging.DEBUG)
+
+    if sys.argv[1] == "0,0":
+        my_pos = (0, 0)
+        node_meta_dict[my_pos] = machine_info.get_ip()
     serve()
+
+## TODO: Store node metadata to file

@@ -15,4 +15,6 @@ message HelloRequest {
 
 message HelloReply {
     string message = 1;
+    string my_pos = 2;
+    string your_pos = 3;
 }

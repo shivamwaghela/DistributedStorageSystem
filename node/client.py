@@ -21,7 +21,7 @@ def greet(ip, channel):
                                                             cpu_usage=machine_info.get_my_cpu_usage(),
                                                             memory_usage=machine_info.get_my_memory_usage(),
                                                             disk_usage=machine_info.get_my_memory_usage()))
-    logger.info("Response from " + ip + ": " + response.message)
+    logger.info("Response from " + ip + ": " + response)
 
 
 def get_connection_list():
