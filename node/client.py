@@ -22,6 +22,10 @@ def greet(ip, channel):
                                                             memory_usage=machine_info.get_my_memory_usage(),
                                                             disk_usage=machine_info.get_my_memory_usage()))
     logger.info("Response from " + ip + ": " + response)
+    node_meta_dict = {eval(response.my_pos): node_ip, eval(response.your_pos): machine_info.get_ip()}
+    file = open("node_meta.txt", "w+")
+    file.write(str(node_meta_dict))
+    file.close()
 
 
 def get_connection_list():
@@ -55,4 +59,4 @@ if __name__ == '__main__':
     channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
     greet(node_ip, channel)
     get_connection_list()
-    greet_the_team()
+    #greet_the_team()

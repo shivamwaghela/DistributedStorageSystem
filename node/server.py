@@ -35,6 +35,7 @@ file.close()
 node_meta_dict = {}
 my_pos = (0, 0)
 
+
 class Greeter(greet_pb2_grpc.GreeterServicer):
 
     def SayHello(self, request, context):
@@ -70,6 +71,10 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         # find position such that it maintains symmetry; check neighbor or neighbor's neighbor
         if len(node_meta_dict.keys()) == 1:
             new_node_pos = available_pos["right"]  # default to right position
+            node_meta_dict[new_node_pos] = request.name
+            file = open("node_meta.txt", "w+")
+            file.write(str(node_meta_dict))
+            file.close()
             return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos),
                                         your_pos=str(new_node_pos))
 
@@ -116,6 +121,10 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
 
         # assign node a position
         # send my position and the added node's position
+        node_meta_dict[new_node_pos] = request.name
+        file = open("node_meta.txt", "w+")
+        file.write(str(node_meta_dict))
+        file.close()
         return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos), your_pos=str(new_node_pos))
 
 
@@ -168,10 +177,26 @@ if __name__ == "__main__":
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(machine_info.get_ip())
     logger.setLevel(logging.DEBUG)
-
-    if len(sys.argv) > 2 and sys.argv[1] == "0,0":
+    print(sys.argv)
+    if len(sys.argv) > 1 and sys.argv[1] == "0,0":
         my_pos = (0, 0)
         node_meta_dict[my_pos] = machine_info.get_ip()
+        file = open("node_meta.txt",  "w+")
+        file.write(str(node_meta_dict))
+        file.close()
+    else:
+        file = open("node_meta.txt", "r")
+        try:
+            node_meta_dict = eval(file.readlines()[0])
+            file.close()
+            # find our position
+            my_ip = machine_info.get_ip()
+            for pos in node_meta_dict:
+                if node_meta_dict[pos] == my_ip:
+                    my_pos = pos
+                    break
+        except:
+            node_meta_dict = {}
     serve()
 
 ## TODO: Store node metadata to file
