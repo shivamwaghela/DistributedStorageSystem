@@ -9,7 +9,7 @@ import os
 import sys
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
-
+import time
 
 import machine_info
 import greet_pb2
@@ -39,7 +39,17 @@ my_pos = (0, 0)
 class Greeter(greet_pb2_grpc.GreeterServicer):
 
     def SayHello(self, request, context):
-        global connection_dict, my_pos
+        global connection_dict, my_pos, node_meta_dict
+        file = open("node_meta.txt", "r")
+        node_meta_dict = eval(file.readlines()[0])
+        file.close()
+        # find our position
+        my_ip = machine_info.get_ip()
+        for pos in node_meta_dict:
+            if node_meta_dict[pos] == my_ip:
+                my_pos = pos
+                break
+
         logger.info("Greetings received from " + request.name)
         file = open("connection_info.txt", "r")
         connection_dict = eval(file.readlines()[0])
@@ -185,8 +195,8 @@ if __name__ == "__main__":
         file.write(str(node_meta_dict))
         file.close()
     else:
-        file = open("node_meta.txt", "r")
         try:
+            file = open("node_meta.txt", "r")
             node_meta_dict = eval(file.readlines()[0])
             file.close()
             # find our position
