@@ -6,6 +6,7 @@ from psutil import cpu_percent, virtual_memory, disk_usage
 import grpc
 import logging
 import os
+import random
 import sys
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
@@ -73,10 +74,12 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         unavailable_pos = {}
 
         for pos in neighbor_pos:
-            if neighbor_pos[pos] not in node_meta_dict:
+            if neighbor_pos[pos] not in node_meta_dict.keys():
                 available_pos[pos] = neighbor_pos[pos]
             else:
                 unavailable_pos[pos] = neighbor_pos[pos]
+
+        # TODO: if available_pos == 0 forward the request
 
         # find position such that it maintains symmetry; check neighbor or neighbor's neighbor
         if len(node_meta_dict.keys()) == 1:
@@ -90,29 +93,46 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
 
         # eliminate farthest position
         if len(available_pos) == 3:
-            if top in unavailable_pos and top == unavailable_pos["top"]:
+            if "top" in unavailable_pos and top == unavailable_pos["top"]:
                 del available_pos["bottom"]
-            elif bottom in unavailable_pos and bottom == unavailable_pos["bottom"]:
+            elif "bottom" in unavailable_pos and bottom == unavailable_pos["bottom"]:
                 del available_pos["top"]
-            elif left in unavailable_pos and left == unavailable_pos["left"]:
+            elif "left" in unavailable_pos.keys() and left == unavailable_pos["left"]:
                 del available_pos["right"]
-            else:
+            elif "right" in unavailable_pos and left == unavailable_pos["right"]:
                 del available_pos["left"]
 
-        # eliminate one more
         new_node_pos = ()
+
+        # eliminate one more
         if len(available_pos) == 2:
-            #  get neighbor's node metadata
-            # grpc
-            x, y = unavailable_pos[0] # neighbor
-            node_ip = request.name
+            # now you have two options - L/R or T/B
+
+            # get neighbor's node metadata
+            my_ip = machine_info.get_ip()
+            my_neighbor_pos = ()
+            my_neighbor_ip = ""
+
+            # TODO: gets only one neighbor pos; last neighbor
+            for d in node_meta_dict.items():
+                if d[1] != my_ip:
+                    my_neighbor_pos = d[0]
+                    my_neighbor_ip = d[1]
+
+            node_ip = my_neighbor_ip
             node_port = 2750
             channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
             network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
             response = network_manager_stub.GetNodeMetaData(network_manager_pb2.GetConnectionListRequest(
-                                                node_ip=machine_info.get_ip()))
-            print(eval(response.node_meta_dict))
+                                                            node_ip=machine_info.get_ip()))
+            logger.info("GetNodeMetaData response from " + node_ip + " " + response.node_meta_dict)
             neighbor_meta_dict = eval(response.node_meta_dict)
+
+            # check your neighbor's connections
+            # assign the same position as your neighbor's neighbor to the new node
+            # L->L else R; T->T else B
+
+            x, y = my_neighbor_pos
             neighbor_top = (x - 1, y)
             neighbor_bottom = (x + 1, y)
             neighbor_left = (x, y - 1)
@@ -127,6 +147,9 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
             if "right" in available_pos and neighbor_right in neighbor_meta_dict:
                     new_node_pos = available_pos["right"]
 
+        if new_node_pos == ():
+            # assign random position
+            new_node_pos = random.choice(list(available_pos.keys()))
 
 
         # assign node a position
