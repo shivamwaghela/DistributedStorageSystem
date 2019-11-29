@@ -80,6 +80,9 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
                 unavailable_pos[pos] = neighbor_pos[pos]
 
         # TODO: if available_pos == 0 forward the request
+        if len(available_pos) == 0:
+            return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos="",
+                                        your_pos="")
 
         # find position such that it maintains symmetry; check neighbor or neighbor's neighbor
         if len(node_meta_dict.keys()) == 1:

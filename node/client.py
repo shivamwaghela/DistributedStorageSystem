@@ -22,6 +22,9 @@ def greet(ip, channel):
                                                             memory_usage=machine_info.get_my_memory_usage(),
                                                             disk_usage=machine_info.get_my_memory_usage()))
     logger.info("Response from " + ip + ": " + response)
+    if response.my_pos == "" and response.your_pos == "":
+        logger.error("Cannot join " + ip)
+        return
     node_meta_dict = {eval(response.my_pos): node_ip, eval(response.your_pos): machine_info.get_ip()}
     file = open("node_meta.txt", "w+")
     file.write(str(node_meta_dict))
