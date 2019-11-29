@@ -152,7 +152,7 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
 
         if new_node_pos == ():
             # assign random position
-            new_node_pos = random.choice(list(available_pos.keys()))
+            new_node_pos = available_pos[random.choice(list(available_pos.keys()))]
 
 
         # assign node a position
@@ -161,6 +161,8 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         file = open("node_meta.txt", "w+")
         file.write(str(node_meta_dict))
         file.close()
+
+        # TODO: Also check if the new node has to make connections to its neighbors (if any)
         return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos), your_pos=str(new_node_pos))
 
 

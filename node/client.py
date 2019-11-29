@@ -21,7 +21,7 @@ def greet(ip, channel):
                                                             cpu_usage=machine_info.get_my_cpu_usage(),
                                                             memory_usage=machine_info.get_my_memory_usage(),
                                                             disk_usage=machine_info.get_my_memory_usage()))
-    logger.info("Response from " + ip + ": " + response)
+    logger.info("Response from " + ip + ": " + str(response))
     if response.my_pos == "" and response.your_pos == "":
         logger.error("Cannot join " + ip)
         return
