@@ -10,8 +10,9 @@ import random
 import sys
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
-import time
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
 
+import helper
 import machine_info
 import greet_pb2
 import greet_pb2_grpc
@@ -64,12 +65,7 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         file.close()
 
         # figure out your available positions
-        x, y = my_pos
-        top = (x-1, y)
-        bottom = (x+1, y)
-        left = (x, y-1)
-        right = (x, y+1)
-        neighbor_pos = {"top": top, "bottom": bottom, "left": left, "right": right}
+        neighbor_pos = helper.get_neighbor_coordinates()
         available_pos = {}
         unavailable_pos = {}
 
@@ -96,13 +92,13 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
 
         # eliminate farthest position
         if len(available_pos) == 3:
-            if "top" in unavailable_pos and top == unavailable_pos["top"]:
+            if "top" in unavailable_pos and neighbor_pos["top"] == unavailable_pos["top"]:
                 del available_pos["bottom"]
-            elif "bottom" in unavailable_pos and bottom == unavailable_pos["bottom"]:
+            elif "bottom" in unavailable_pos and neighbor_pos["bottom"] == unavailable_pos["bottom"]:
                 del available_pos["top"]
-            elif "left" in unavailable_pos.keys() and left == unavailable_pos["left"]:
+            elif "left" in unavailable_pos.keys() and neighbor_pos["left"] == unavailable_pos["left"]:
                 del available_pos["right"]
-            elif "right" in unavailable_pos and left == unavailable_pos["right"]:
+            elif "right" in unavailable_pos and neighbor_pos["right"] == unavailable_pos["right"]:
                 del available_pos["left"]
 
         new_node_pos = ()
@@ -135,19 +131,15 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
             # assign the same position as your neighbor's neighbor to the new node
             # L->L else R; T->T else B
 
-            x, y = my_neighbor_pos
-            neighbor_top = (x - 1, y)
-            neighbor_bottom = (x + 1, y)
-            neighbor_left = (x, y - 1)
-            neighbor_right = (x, y + 1)
+            my_neighbors_pos = helper.get_neighbor_coordinates(my_neighbor_pos)
 
-            if "top" in available_pos and neighbor_top in neighbor_meta_dict:
+            if "top" in available_pos and my_neighbors_pos["top"] in neighbor_meta_dict:
                     new_node_pos = available_pos["top"]
-            if "bottom" in available_pos and neighbor_bottom in neighbor_meta_dict:
+            if "bottom" in available_pos and my_neighbors_pos["bottom"] in neighbor_meta_dict:
                     new_node_pos = available_pos["bottom"]
-            if "left" in available_pos and neighbor_left in neighbor_meta_dict:
+            if "left" in available_pos and my_neighbors_pos["left"] in neighbor_meta_dict:
                     new_node_pos = available_pos["left"]
-            if "right" in available_pos and neighbor_right in neighbor_meta_dict:
+            if "right" in available_pos and my_neighbors_pos["right"] in neighbor_meta_dict:
                     new_node_pos = available_pos["right"]
 
         if new_node_pos == ():
@@ -175,7 +167,6 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
     def GetNodeMetaData(self, request, context):
         logger.info("GetNodeMetaData called from: " + request.node_ip)
         return network_manager_pb2.GetNodeMetaDataResponse(node_meta_dict="{(0,0): '10.10.10.10'}")
-
 
 
 class MachineState(machine_stats_pb2_grpc.MachineStatsServicer):
