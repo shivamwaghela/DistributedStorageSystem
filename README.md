@@ -1,4 +1,6 @@
 # Distributed Storage System
+## Architecture
+![](./docs/mesh.png)
 ## Installation and Setup
 #### Prerequisites
 - Python 3
