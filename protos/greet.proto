@@ -17,4 +17,5 @@ message HelloReply {
     string message = 1;
     string my_pos = 2;
     string your_pos = 3;
+    string additional_connections = 4;
 }

@@ -32,8 +32,6 @@ file = open("connection_info.txt", "w+")
 file.write(str(connection_dict))
 file.close()
 
-#file = open("node_metadata.txt", "w+")
-
 node_meta_dict = {}
 my_pos = (0, 0)
 
@@ -88,7 +86,7 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
             file.write(str(node_meta_dict))
             file.close()
             return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos),
-                                        your_pos=str(new_node_pos))
+                                        your_pos=str(new_node_pos), additional_connections=str([]))
 
         # eliminate farthest position
         if len(available_pos) == 3:
@@ -132,19 +130,25 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
             # L->L else R; T->T else B
 
             my_neighbors_pos = helper.get_neighbor_coordinates(my_neighbor_pos)
+            pos_direction = ""
 
             if "top" in available_pos and my_neighbors_pos["top"] in neighbor_meta_dict:
                     new_node_pos = available_pos["top"]
+                    pos_direction = "top"
             if "bottom" in available_pos and my_neighbors_pos["bottom"] in neighbor_meta_dict:
                     new_node_pos = available_pos["bottom"]
+                    pos_direction = "bottom"
             if "left" in available_pos and my_neighbors_pos["left"] in neighbor_meta_dict:
                     new_node_pos = available_pos["left"]
+                    pos_direction = "left"
             if "right" in available_pos and my_neighbors_pos["right"] in neighbor_meta_dict:
                     new_node_pos = available_pos["right"]
+                    pos_direction = "right"
 
         if new_node_pos == ():
             # assign random position
             new_node_pos = available_pos[random.choice(list(available_pos.keys()))]
+            pos_direction = ""
 
 
         # assign node a position
@@ -154,8 +158,11 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         file.write(str(node_meta_dict))
         file.close()
 
-        # TODO: Also check if the new node has to make connections to its neighbors (if any)
-        return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos), your_pos=str(new_node_pos))
+        additional_connections = str([neighbor_meta_dict[my_neighbors_pos[pos_direction]]]) if pos_direction != "" \
+                                    else str([])
+
+        return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos), your_pos=str(new_node_pos),
+                                    additional_connections=additional_connections)
 
 
 class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
@@ -170,6 +177,18 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
         node_meta_dict = eval(file.readlines()[0])
         file.close()
         return network_manager_pb2.GetNodeMetaDataResponse(node_meta_dict=str(node_meta_dict))
+
+    def UpdateNeighborMetaData(self, request, context):
+        logger.info("UpdateNeighborMetaData called from: " + request.node_meta_dict)
+        file = open("node_meta.txt", "r")
+        node_meta_dict = eval(file.readlines()[0])
+        file.close()
+
+        file = open("node_meta.txt", "w")
+        node_meta_dict.update((request.node_meta_dict))
+        file.write(str(node_meta_dict))
+        file.close()
+        return network_manager_pb2.UpdateNeighborMetaDataResponse(status="ok")
 
 
 class MachineState(machine_stats_pb2_grpc.MachineStatsServicer):
@@ -230,5 +249,3 @@ if __name__ == "__main__":
         except:
             node_meta_dict = {}
     serve()
-
-## TODO: Store node metadata to file

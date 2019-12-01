@@ -3,6 +3,7 @@ syntax = "proto3";
 service NetworkManager {
     rpc GetConnectionList (GetConnectionListRequest) returns (GetConnectionListResponse) {}
     rpc GetNodeMetaData (GetNodeMetaDataRequest) returns (GetNodeMetaDataResponse) {}
+    rpc UpdateNeighborMetaData (UpdateNeighborMetaDataRequest) returns (UpdateNeighborMetaDataResponse) {}
 }
 
 message GetConnectionListRequest {
@@ -19,4 +20,12 @@ message GetNodeMetaDataRequest {
 
 message GetNodeMetaDataResponse {
     string node_meta_dict = 1;
+}
+
+message UpdateNeighborMetaDataRequest {
+    string node_meta_dict = 1;
+}
+
+message UpdateNeighborMetaDataResponse {
+    string status = 1;
 }
