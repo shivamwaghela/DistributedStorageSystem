@@ -65,7 +65,7 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         file.close()
 
         # figure out your available positions
-        neighbor_pos = helper.get_neighbor_coordinates()
+        neighbor_pos = helper.get_neighbor_coordinates(my_pos)
         available_pos = {}
         unavailable_pos = {}
 
@@ -166,7 +166,10 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
 
     def GetNodeMetaData(self, request, context):
         logger.info("GetNodeMetaData called from: " + request.node_ip)
-        return network_manager_pb2.GetNodeMetaDataResponse(node_meta_dict="{(0,0): '10.10.10.10'}")
+        file = open("node_meta.txt", "r")
+        node_meta_dict = eval(file.readlines()[0])
+        file.close()
+        return network_manager_pb2.GetNodeMetaDataResponse(node_meta_dict=str(node_meta_dict))
 
 
 class MachineState(machine_stats_pb2_grpc.MachineStatsServicer):
