@@ -229,8 +229,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(machine_info.get_ip())
     logger.setLevel(logging.DEBUG)
     print(sys.argv)
-    if len(sys.argv) > 1 and sys.argv[1] == "0,0":
-        my_pos = (0, 0)
+    if len(sys.argv) == 3:
+        my_pos = (int(sys.argv[1]), int(sys.argv[2]))
         node_meta_dict[my_pos] = machine_info.get_ip()
         file = open("node_meta.txt",  "w+")
         file.write(str(node_meta_dict))
@@ -248,4 +248,7 @@ if __name__ == "__main__":
                     break
         except:
             node_meta_dict = {}
+            file = open("node_meta.txt", "w+")
+            file.write(str(node_meta_dict))
+            file.close()
     serve()

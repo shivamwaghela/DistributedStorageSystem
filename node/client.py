@@ -78,7 +78,10 @@ if __name__ == '__main__':
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(machine_info.get_ip())
     logger.setLevel(logging.DEBUG)
-    node_ip = str(config["node_ip"])
+    if len(sys.argv) != 2:
+        print("usage: python3 node/client.py [ipv4 address]")
+        exit(1)
+    node_ip = sys.argv[1]
     node_port = str(config["port"])
     channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
     greet(node_ip, channel)
