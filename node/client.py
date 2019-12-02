@@ -16,6 +16,7 @@ connection_list = []
 
 
 def greet(ip, channel):
+    global node_ip, node_port
     greeter_stub = greet_pb2_grpc.GreeterStub(channel)
     response = greeter_stub.SayHello(greet_pb2.HelloRequest(name=machine_info.get_ip(),
                                                             cpu_usage=machine_info.get_my_cpu_usage(),
@@ -38,11 +39,12 @@ def greet(ip, channel):
         while i < connections_len:
             node_port = str(config["port"])
             node_ip = eval(response.additional_connections)[i]
-            channel = grpc.insecure_channel(+ ":" + str(node_port))
+            channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
             network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
             response = network_manager_stub.UpdateNeighborMetaData(
                 network_manager_pb2.UpdateNeighborMetaDataRequest(node_meta_dict=str({my_pos: my_ip})))
-            logger.info("Response from:", node_ip, str(response))
+            #logger.info("Response from:", str(node_ip), str(response))
+
             node_meta_dict.update({eval(response.status): node_ip})
             file = open("node_meta.txt", "w+")
             file.write(str(node_meta_dict))

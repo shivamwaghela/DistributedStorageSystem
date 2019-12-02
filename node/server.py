@@ -185,7 +185,7 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
         file.close()
 
         file = open("node_meta.txt", "w")
-        node_meta_dict.update((request.node_meta_dict))
+        node_meta_dict.update(eval(request.node_meta_dict))
         file.write(str(node_meta_dict))
         file.close()
         return network_manager_pb2.UpdateNeighborMetaDataResponse(status=str(my_pos))
