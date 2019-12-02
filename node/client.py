@@ -37,7 +37,7 @@ def greet(ip, channel):
         my_ip = machine_info.get_ip()
         while i < connections_len:
             node_port = str(config["port"])
-            channel = grpc.insecure_channel(response.additional_connections[i] + ":" + str(node_port))
+            channel = grpc.insecure_channel(eval(response.additional_connections)[i] + ":" + str(node_port))
             network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
             response = network_manager_stub.UpdateNeighborMetaData(
                 network_manager_pb2.UpdateNeighborMetaDataRequest(node_meta_dict=str({my_pos: my_ip})))

@@ -158,6 +158,7 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         file.write(str(node_meta_dict))
         file.close()
 
+        print("pos_dir:", pos_direction)
         additional_connections = str([neighbor_meta_dict[my_neighbors_pos[pos_direction]]]) if pos_direction != "" \
                                     else str([])
 
@@ -185,7 +186,7 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
         file.close()
 
         file = open("node_meta.txt", "w")
-        node_meta_dict.update((request.node_meta_dict))
+        node_meta_dict.update(eval(request.node_meta_dict))
         file.write(str(node_meta_dict))
         file.close()
         return network_manager_pb2.UpdateNeighborMetaDataResponse(status="ok")
