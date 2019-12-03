@@ -43,7 +43,7 @@ def greet(ip, channel):
             network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
             logger.info("greet: making add. conn. to " + node_ip)
             response = network_manager_stub.UpdateNeighborMetaData(
-                network_manager_pb2.UpdateNeighborMetaDataRequest(node_meta_dict=str({my_pos: my_ip})))
+                network_manager_pb2.UpdateNeighborMetaDataRequest(node_meta_dict=str({eval(my_pos): my_ip})))
             logger.info("greet: response: " + str(response))
             node_meta_dict.update({eval(response.status): node_ip})
             file = open("node_meta.txt", "w+")
@@ -85,5 +85,5 @@ if __name__ == '__main__':
     node_port = str(config["port"])
     chn = grpc.insecure_channel(node_ip + ":" + str(node_port))
     greet(node_ip, chn)
-    get_connection_list()
+    #get_connection_list()
     #greet_the_team()
