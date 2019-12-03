@@ -32,3 +32,17 @@ python3 node/server.py
 ```bash
 python3 node/client.py
 ```
+## Steps to bring up the network
+#### Start the first node of the network
+```
+python3 node/server.py 0 0
+```
+#### Adding nodes to the network
+##### Start client and connect to any node in the network
+```
+python3 node/client.py 10.0.0.1
+```
+##### Start server after node is into the network
+```
+python3 node/server.py
+```
