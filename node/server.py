@@ -162,19 +162,19 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
             logger.info("Greeter.SayHello: my_neighbors_neighbor_pos: " + str(my_neighbors_neighbor_pos))
 
             if "top" in available_pos and my_neighbors_neighbor_pos["top"] in neighbor_meta_dict \
-                    and neighbor_meta_dict["top"] != my_ip:
+                    and neighbor_meta_dict[my_neighbors_neighbor_pos["top"]] != my_ip:
                     new_node_pos = available_pos["top"]
                     pos_direction = "top"
             if "bottom" in available_pos and my_neighbors_neighbor_pos["bottom"] in neighbor_meta_dict \
-                    and neighbor_meta_dict["bottom"] != my_ip:
+                    and neighbor_meta_dict[my_neighbors_neighbor_pos["bottom"]] != my_ip:
                     new_node_pos = available_pos["bottom"]
                     pos_direction = "bottom"
             if "left" in available_pos and my_neighbors_neighbor_pos["left"] in neighbor_meta_dict \
-                    and neighbor_meta_dict["left"] != my_ip:
+                    and neighbor_meta_dict[my_neighbors_neighbor_pos["left"]] != my_ip:
                     new_node_pos = available_pos["left"]
                     pos_direction = "left"
             if "right" in available_pos and my_neighbors_neighbor_pos["right"] in neighbor_meta_dict \
-                    and neighbor_meta_dict["right"] != my_ip:
+                    and neighbor_meta_dict[my_neighbors_neighbor_pos["right"]] != my_ip:
                     new_node_pos = available_pos["right"]
                     pos_direction = "right"
 
