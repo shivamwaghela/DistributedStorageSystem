@@ -16,6 +16,7 @@ connection_list = []
 
 
 def greet(ip, channel):
+    global node_ip, node_port
     greeter_stub = greet_pb2_grpc.GreeterStub(channel)
     response = greeter_stub.SayHello(greet_pb2.HelloRequest(name=machine_info.get_ip(),
                                                             cpu_usage=machine_info.get_my_cpu_usage(),
@@ -37,32 +38,18 @@ def greet(ip, channel):
         my_ip = machine_info.get_ip()
         while i < connections_len:
             node_port = str(config["port"])
-            channel = grpc.insecure_channel(eval(response.additional_connections)[i] + ":" + str(node_port))
+            node_ip = eval(response.additional_connections)[i]
+            channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
             network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
+            logger.info("greet: making add. conn. to " + node_ip)
             response = network_manager_stub.UpdateNeighborMetaData(
-                network_manager_pb2.UpdateNeighborMetaDataRequest(node_meta_dict=str({my_pos: my_ip})))
-            logger.info("Response from:", node_ip, response)
+                network_manager_pb2.UpdateNeighborMetaDataRequest(node_meta_dict=str({eval(my_pos): my_ip})))
+            logger.info("greet: response: " + str(response))
+            node_meta_dict.update({eval(response.status): node_ip})
+            file = open("node_meta.txt", "w+")
+            file.write(str(node_meta_dict))
+            file.close()
             i += 1
-
-
-def get_connection_list():
-    network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
-    response = network_manager_stub.GetConnectionList(network_manager_pb2
-                                                      .GetConnectionListRequest(node_ip=machine_info.get_ip()))
-    connection_dict = response.node_ip
-    file = open("connection_info.txt", "w")
-    file.write(str(connection_dict))
-    file.close()
-
-
-def greet_the_team():
-    global connection_list
-    file = open("connection_info.txt", "r")
-    connection_list = eval(eval(file.readlines()[0])[0])
-    for ip in connection_list.keys():
-        if ip != machine_info.get_ip():
-            chn = grpc.insecure_channel(ip + ":" + str(node_port))
-            greet(ip, chn)
 
 
 if __name__ == '__main__':
@@ -71,9 +58,10 @@ if __name__ == '__main__':
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(machine_info.get_ip())
     logger.setLevel(logging.DEBUG)
-    node_ip = str(config["node_ip"])
+    if len(sys.argv) != 2:
+        print("usage: python3 node/client.py [ipv4 address]")
+        exit(1)
+    node_ip = sys.argv[1]
     node_port = str(config["port"])
-    channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
-    greet(node_ip, channel)
-    get_connection_list()
-    #greet_the_team()
+    chn = grpc.insecure_channel(node_ip + ":" + str(node_port))
+    greet(node_ip, chn)
