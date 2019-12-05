@@ -5,7 +5,8 @@ class NodePosition(Enum):
     """
     Enum of possible node positions in the network
     """
-    TOP = 0
-    BOTTOM = 1
-    LEFT = 2
+    CENTER = 0
+    TOP = 1
+    BOTTOM = 2
+    LEFT = 3
     RIGHT = 3
