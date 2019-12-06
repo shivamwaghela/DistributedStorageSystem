@@ -275,13 +275,25 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
         # file = open("node_meta.txt", "r")
         # node_meta_dict = eval(file.readlines()[0])
         # file.close()
-        logger.info("NetworkManager.UpdateNeighborMetaData: node_meta_dict: " + str(node_meta_dict))
+        #logger.info("NetworkManager.UpdateNeighborMetaData: node_meta_dict: " + str(node_meta_dict))
 
-        logger.info("NetworkManager.UpdateNeighborMetaData: updating node_meta_dict: " + str(node_meta_dict))
+        #logger.info("NetworkManager.UpdateNeighborMetaData: updating node_meta_dict: " + str(node_meta_dict))
         # file = open("node_meta.txt", "w")
-        node_meta_dict.update(eval(request.node_meta_dict))
+        #node_meta_dict.update(eval(request.node_meta_dict))
         # file.write(str(node_meta_dict))
         # file.close()
+        node_coord = list(request.node_meta_dict.keys())[0]
+        neighbor_pos_dict = helper.get_neighbor_coordinates(node_coord)
+        logger.info("neighbor_pos_dict: {}".format(neighbor_pos_dict))
+        neighbor_pos = ()
+        for item in neighbor_pos_dict.items():
+            if item[1] == node_coord:  # my_pos => server's pos
+                neighbor_pos = item[0]  # NodePosition.TOP
+                break
+        node_ip = request.node_meta_dict[node_coord]
+        channel = grpc.insecure_channel(node_ip + ":2750")
+        conn = connection.Connection(channel=channel, node_coord=node_coord, node_position=neighbor_pos, node_ip=node_ip)
+        node_connections.add_connection(conn)
         logger.info("NetworkManager.UpdateNeighborMetaData: node_meta_dict: " + str(node_meta_dict))
         logger.info("NetworkManager.UpdateNeighborMetaData: my_pos: " + str(my_node_coordinates))
 
