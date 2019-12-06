@@ -254,7 +254,6 @@ class MachineState(machine_stats_pb2_grpc.MachineStatsServicer):
         logger.info("Disk utilization: " + hdd_usage)
         return machine_stats_pb2.GetCPUUsageResponse(disk_usage=hdd_usage)
 
-
 def serve():
     config = load(open('config.yaml'), Loader=Loader)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
@@ -264,6 +263,8 @@ def serve():
     logger.info("Server starting at port " + str(config["port"]))
     server.start()
     server.wait_for_termination()
+
+
 
 
 if __name__ == "__main__":

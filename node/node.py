@@ -17,7 +17,13 @@ import greet_pb2
 import greet_pb2_grpc
 import network_manager_pb2
 import network_manager_pb2_grpc
+import redis
 
+#TODO - Replace with redis hostname, port, password 
+r = redis.Redis(
+    host='hostname',
+    port=port, 
+    password='password')
 
 PORT = "2750"
 
@@ -267,6 +273,24 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
 
         return network_manager_pb2.UpdateNeighborMetaDataResponse(status=str(my_node_coordinates))
 
+# Pseudo code
+class Traversal(network_manager_pb2_grpc.NetworkManagerServicer): #TODO - replace this with traversal proto
+    def ReceiveRequest(self, request, context):
+        logger.info("Here")
+        request_thread = threading.Thread(target=handleRequest, args=(request.filename))
+
+def handleRequest(request):
+    #Check if file is present on my node
+    if not r.exists(request.filename):
+        request.visited.append(machine_info.get_ip()) 
+        # Add neighbours IPs to request.stack
+        # Loop over whatever data structure the list of neighbor IPs is stored in
+        for neighbor in neighbour_list:
+            request.stack.append(neighbor)
+        dest_node_ip = stack.pop()
+        # Forward request to this dest_node_ip
+    else:
+        return response
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
