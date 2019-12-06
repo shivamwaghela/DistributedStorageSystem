@@ -21,4 +21,8 @@ class Connection:
 
     @property
     def node_coordinates(self):
-        return self._node_coordinates
+        return self._node_coordinates\
+
+    @property
+    def node_ip(self):
+        return self._node_ip

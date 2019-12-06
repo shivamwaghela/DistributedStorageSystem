@@ -40,10 +40,25 @@ def greet(ip, channel):
     # file.write(str(node_meta_dict))
     # file.close()
 
-    conn = connection.Connection(channel=channel, node_position=NodePosition.CENTER,
-                                  node_coordinates=response.your_pos, node_ip=my_ip)
 
-    node_connections.add_connection(conn)
+    my_conn = connection.Connection(channel=None, node_position=NodePosition.CENTER,
+                                  node_coordinates=eval(response.your_pos), node_ip=my_ip)
+    node_connections.add_connection(my_conn)
+
+    # calc node_ip's position
+    neighbor_pos_dict = helper.get_neighbor_coordinates(eval(response.your_pos))
+    logger.info("neighbor_pos_dict: {}".format(neighbor_pos_dict))
+    neighbor_pos = ()
+    for item in neighbor_pos_dict.items():
+        if item[1] == eval(response.my_pos): # my_pos => server's pos
+            neighbor_pos = item[0] # NodePosition.TOP
+            break
+
+    logger.info(("neighbor_pos: {}".format(neighbor_pos)))
+    neighbor_conn = connection.Connection(channel=channel, node_position=neighbor_pos,
+                                          node_coordinates=eval(response.my_pos), node_ip=node_ip)
+    node_connections.add_connection(neighbor_conn)
+
     logger.info("node_connections: {}".format(node_connections.connection_dict))
 
     connections_len = len(eval(response.additional_connections))
@@ -61,9 +76,17 @@ def greet(ip, channel):
                 network_manager_pb2.UpdateNeighborMetaDataRequest(node_meta_dict=str({eval(my_pos): my_ip})))
             logger.info("greet: response: " + str(response))
             node_meta_dict.update({eval(response.status): node_ip})
-            # file = open("node_meta.txt", "w+")
-            # file.write(str(node_meta_dict))
-            # file.close()
+            neighbor_pos = ""
+            for item in neighbor_pos_dict.items():
+                if item[1] == eval(response.status):
+                    neighbor_pos = item[0]  # NodePosition.TOP
+                    break
+            
+            conn = connection.Connection(channel=channel, node_position=neighbor_pos, node_coordinates=eval(response.status), node_ip=node_ip)
+
+            node_connections.add_connection(conn)
+            logger.info("node_connections: {}".format(node_connections.connection_dict))
+            # logger.info()
             i += 1
 
 
@@ -77,20 +100,10 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         # logger.info("my_pos", str(my_pos))
         logger.info("Greeter.SayHello: request: " + str(request.name))
         logger.info("Greeter.SayHello: reading node_meta.txt.")
-        # file = open("node_meta.txt", "r")
-        # node_meta_dict = eval(file.readlines()[0])
-        # file.close()
-        node_meta_dict = {(0, 0): "10.0.0.3"}
 
-        logger.info("Greeter.SayHello: read node_meta.txt; node_meta_dict: " + str(node_meta_dict))
+        connection_dict = node_connections.connection_dict
 
-        # find our position
-        logger.info("Greeter.SayHello: my_ip: " + my_ip)
-        for pos in node_meta_dict.keys():
-            if node_meta_dict[pos] == my_ip:
-                my_pos = pos
-                break
-        # logger.info("Greeter.SayHello: my_pos: " + str(my_pos))
+        logger.info("Greeter.SayHello: read node_meta.txt; connection_dict: {}".format(connection_dict))
 
         # figure out your available positions
         neighbor_pos = helper.get_neighbor_coordinates(my_pos)
@@ -98,11 +111,13 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         available_pos = {}
         unavailable_pos = {}
 
+        # neighbor_pos = {NodePosition.TOP: top, NodePosition.BOTTOM: bottom, NodePosition.LEFT: left, NodePosition.RIGHT: right}
+
         for pos in neighbor_pos.keys():
-            if neighbor_pos[pos] not in node_meta_dict.keys():
-                available_pos[pos] = neighbor_pos[pos]
-            else:
+            if pos in connection_dict.keys():
                 unavailable_pos[pos] = neighbor_pos[pos]
+            else:
+                available_pos[pos] = neighbor_pos[pos]
 
         logger.info("Greeter.SayHello: available_pos: " + str(available_pos))
         logger.info("Greeter.SayHello: unavailable_pos: " + str(unavailable_pos))
@@ -116,11 +131,15 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
 
         # find position such that it maintains symmetry; check neighbor or neighbor's neighbor
         if len(available_pos) == 4:
-            logger.info("Greeter.SayHello: len(available_pos) == 4: " + str(node_meta_dict))
-            new_node_pos = available_pos["right"]  # default to right position
-            node_meta_dict[new_node_pos] = request.name
+            # logger.info("Greeter.SayHello: len(available_pos) == 4: " + str(node_meta_dict))
+            new_node_pos = available_pos[NodePosition.RIGHT]  # default to right position
+            channel = grpc.insecure_channel(request.name + ":2750")
+            conn = connection.Connection(channel=channel, node_position=NodePosition.RIGHT,
+                                         node_coordinates=new_node_pos, node_ip=request.name)
+            node_connections.add_connection(conn)
+            logger.info("node_connections: {}".format(node_connections.connection_dict))
 
-            logger.info("Greeter.SayHello:  Adding to default right: node_meta_dict:" + str(node_meta_dict))
+            # logger.info("Greeter.SayHello:  Adding to default right: node_meta_dict:" + str(node_meta_dict))
 
             logger.info("Greeter.SayHello: Writing to node_meta_dict to file.")
             # file = open("node_meta.txt", "w")
@@ -135,20 +154,24 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         # eliminate farthest position
         if len(available_pos) == 3:
             logger.info("Greeter.SayHello: len(available_pos) == 3; available_pos: (before)" + str(available_pos))
-            if "top" in unavailable_pos and neighbor_pos["top"] == unavailable_pos["top"]:
-                del available_pos["bottom"]
-            elif "bottom" in unavailable_pos and neighbor_pos["bottom"] == unavailable_pos["bottom"]:
-                del available_pos["top"]
-            elif "left" in unavailable_pos.keys() and neighbor_pos["left"] == unavailable_pos["left"]:
-                del available_pos["right"]
-            elif "right" in unavailable_pos and neighbor_pos["right"] == unavailable_pos["right"]:
-                del available_pos["left"]
+            if NodePosition.TOP in unavailable_pos \
+                    and neighbor_pos[NodePosition.TOP] == unavailable_pos[NodePosition.TOP]:
+                del available_pos[NodePosition.BOTTOM]
+            elif NodePosition.BOTTOM in unavailable_pos \
+                    and neighbor_pos[NodePosition.BOTTOM] == unavailable_pos[NodePosition.BOTTOM]:
+                del available_pos[NodePosition.TOP]
+            elif NodePosition.LEFT in unavailable_pos.keys() \
+                    and neighbor_pos[NodePosition.LEFT] == unavailable_pos[NodePosition.LEFT]:
+                del available_pos[NodePosition.RIGHT]
+            elif NodePosition.RIGHT in unavailable_pos \
+                    and neighbor_pos[NodePosition.RIGHT] == unavailable_pos[NodePosition.RIGHT]:
+                del available_pos[NodePosition.LEFT]
             logger.info("Greeter.SayHello: len(available_pos) == 3; available_pos: (after)" + str(available_pos))
 
         new_node_pos = ()
         my_neighbors_neighbor_pos = {}
         neighbor_meta_dict = {}
-        pos_direction = ""
+        pos_direction = None
         my_neighbor_pos = ()
         my_neighbor_ip = ""
 
@@ -158,50 +181,62 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
             # now you have two options - L/R or T/B
             # get neighbor's node metadata
             # TODO: gets only one neighbor pos; last neighbor
-            for d in node_meta_dict.items():
-                if d[1] != my_ip:
-                    my_neighbor_pos = d[0]
-                    my_neighbor_ip = d[1]
-            logger.info("Greeter.SayHello: my_neighbor_pos: " + str(my_neighbor_pos))
-            logger.info("Greeter.SayHello: my_neighbor_ip: " + str(my_neighbor_ip))
+            # for d in node_meta_dict.items():
+            #     if d[1] != my_ip:
+            #         my_neighbor_pos = d[0]
+            #         my_neighbor_ip = d[1]
+            for my_neighbor_direction in unavailable_pos.keys():
+                my_neighbor_pos = unavailable_pos[my_neighbor_direction] # (x,y)
+                my_neighbor_ip = connection_dict[my_neighbor_direction].node_ip # ip
+                logger.info("Greeter.SayHello: my_neighbor_pos: " + str(my_neighbor_pos))
+                logger.info("Greeter.SayHello: my_neighbor_ip: " + str(my_neighbor_ip))
 
-            node_ip = my_neighbor_ip
-            node_port = 2750
-            channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
-            network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
+                node_ip = my_neighbor_ip
+                channel = grpc.insecure_channel(node_ip + ":2750")
+                network_manager_stub = network_manager_pb2_grpc.NetworkManagerStub(channel)
 
-            logger.info("Greeter.SayHello: Request GetNodeMetaData in: " + node_ip)
-            response = network_manager_stub.GetNodeMetaData(network_manager_pb2.GetConnectionListRequest(
-                                                            node_ip=machine_info.get_my_ip()))
-            logger.info("Greeter.SayHello: GetNodeMetaData response from " + node_ip + " " + response.node_meta_dict)
-            neighbor_meta_dict = eval(response.node_meta_dict)
+                logger.info("Greeter.SayHello: Request GetNodeMetaData in: " + node_ip)
+                response = network_manager_stub.GetNodeMetaData(network_manager_pb2.GetConnectionListRequest(
+                                                                node_ip=machine_info.get_my_ip()))
+                #logger.info("Greeter.SayHello: GetNodeMetaData response from " + node_ip + " " + response.node_meta_dict)
+                neighbor_meta_dict = eval(response.node_meta_dict)
 
-            logger.info("Greeter.SayHello: neighbor_meta_dict: " + str(neighbor_meta_dict))
-            # check your neighbor's connections
-            # assign the same position as your neighbor's neighbor to the new node
-            # L->L else R; T->T else B
+                logger.info("Greeter.SayHello: neighbor_meta_dict: " + str(neighbor_meta_dict))
+                # check your neighbor's connections
+                # assign the same position as your neighbor's neighbor to the new node
+                # L->L else R; T->T else B
 
-            logger.info("Greeter.SayHello: my_neighbor_pos: " + str(my_neighbor_pos))
-            my_neighbors_neighbor_pos = helper.get_neighbor_coordinates(my_neighbor_pos)
+                logger.info("Greeter.SayHello: my_neighbor_pos: " + str(my_neighbor_pos))
+                my_neighbors_neighbor_pos = helper.get_neighbor_coordinates(my_neighbor_pos)
 
-            logger.info("Greeter.SayHello: my_neighbors_neighbor_pos: " + str(my_neighbors_neighbor_pos))
+                logger.info("Greeter.SayHello: my_neighbors_neighbor_pos: " + str(my_neighbors_neighbor_pos))
 
-            if "top" in available_pos and my_neighbors_neighbor_pos["top"] in neighbor_meta_dict \
-                    and neighbor_meta_dict[my_neighbors_neighbor_pos["top"]] != my_ip:
-                    new_node_pos = available_pos["top"]
-                    pos_direction = "top"
-            if "bottom" in available_pos and my_neighbors_neighbor_pos["bottom"] in neighbor_meta_dict \
-                    and neighbor_meta_dict[my_neighbors_neighbor_pos["bottom"]] != my_ip:
-                    new_node_pos = available_pos["bottom"]
-                    pos_direction = "bottom"
-            if "left" in available_pos and my_neighbors_neighbor_pos["left"] in neighbor_meta_dict \
-                    and neighbor_meta_dict[my_neighbors_neighbor_pos["left"]] != my_ip:
-                    new_node_pos = available_pos["left"]
-                    pos_direction = "left"
-            if "right" in available_pos and my_neighbors_neighbor_pos["right"] in neighbor_meta_dict \
-                    and neighbor_meta_dict[my_neighbors_neighbor_pos["right"]] != my_ip:
-                    new_node_pos = available_pos["right"]
-                    pos_direction = "right"
+                if NodePosition.TOP in available_pos \
+                        and my_neighbors_neighbor_pos[NodePosition.TOP] in neighbor_meta_dict \
+                        and neighbor_meta_dict[my_neighbors_neighbor_pos[NodePosition.TOP]] != my_ip:
+                        new_node_pos = available_pos[NodePosition.TOP]
+                        pos_direction = NodePosition.TOP
+                if NodePosition.BOTTOM in available_pos \
+                        and my_neighbors_neighbor_pos[NodePosition.BOTTOM] in neighbor_meta_dict \
+                        and neighbor_meta_dict[my_neighbors_neighbor_pos[NodePosition.BOTTOM]] != my_ip:
+                        new_node_pos = available_pos[NodePosition.BOTTOM]
+                        pos_direction = NodePosition.BOTTOM
+                if NodePosition.LEFT in available_pos \
+                        and my_neighbors_neighbor_pos[NodePosition.LEFT] in neighbor_meta_dict \
+                        and neighbor_meta_dict[my_neighbors_neighbor_pos[NodePosition.LEFT]] != my_ip:
+                        new_node_pos = available_pos[NodePosition.LEFT]
+                        pos_direction = NodePosition.LEFT
+                if NodePosition.RIGHT in available_pos \
+                        and my_neighbors_neighbor_pos[NodePosition.RIGHT] in neighbor_meta_dict \
+                        and neighbor_meta_dict[my_neighbors_neighbor_pos[NodePosition.RIGHT]] != my_ip:
+                        new_node_pos = available_pos[NodePosition.RIGHT]
+                        pos_direction = NodePosition.RIGHT
+
+                if pos_direction:
+                    del available_pos[pos_direction]
+
+                if new_node_pos != ():
+                    break
 
             logger.info("Greeter.SayHello: new_node_pos: " + str(new_node_pos))
             logger.info("Greeter.SayHello: pos_direction: " + str(pos_direction))
@@ -212,33 +247,29 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
             # assign random position
             random_pos = random.choice(list(available_pos.keys()))
             new_node_pos = available_pos[random_pos]
-            pos_direction = ""
+            pos_direction = random_pos
             logger.info("Greeter.SayHello: new_node_pos: " + str(new_node_pos))
             logger.info("Greeter.SayHello: pos_direction: " + str(pos_direction))
 
         # assign node a position
         # send my position and the added node's position
-        node_meta_dict[new_node_pos] = request.name
-        logger.info("Greeter.SayHello: node_meta_dict: " + str(node_meta_dict))
-        logger.info("Greeter.SayHello: writing node_meta_dict to node_meta.txt: " + str(node_meta_dict))
-        # file = open("node_meta.txt", "w")
-        # file.write(str(node_meta_dict))
-        # file.close()
-        logger.info("Greeter.SayHello: writing node_meta_dict to node_meta.txt completed: " + str(node_meta_dict))
 
-        additional_connections = str(
-            [neighbor_meta_dict[my_neighbors_neighbor_pos[pos_direction]]]) if pos_direction != "" \
-            else str([])
+        try:
+            additional_connections = str([neighbor_meta_dict[my_neighbors_neighbor_pos[pos_direction]]])
+        except KeyError:
+            additional_connections = str([])
 
         logger.info("Greeter.SayHello: additional_connections: " + str(additional_connections))
         logger.info("Greeter.SayHello: my_pos: " + str(my_pos))
         logger.info("Greeter.SayHello: new_node_pos: " + str(new_node_pos))
 
         channel = grpc.insecure_channel(request.name + ":2750")
-        conn = connection.Connection(channel=channel, node_position=NodePosition.TOP,
+        
+        conn = connection.Connection(channel=channel, node_position=pos_direction,
                                       node_coordinates=new_node_pos, node_ip=request.name)
 
         node_connections.add_connection(conn)
+        logger.info("node_connections: {}".format(node_connections.connection_dict))
 
         return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos), your_pos=str(new_node_pos),
                                     additional_connections=additional_connections)
@@ -251,6 +282,9 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
         # file = open("node_meta.txt", "r")
         # node_meta_dict = eval(file.readlines()[0])
         # file.close()
+        node_meta_dict = {}
+        for conn in node_connections.connection_dict.values():
+            node_meta_dict[conn.node_coordinates] = conn.node_ip
         return network_manager_pb2.GetNodeMetaDataResponse(node_meta_dict=str(node_meta_dict))
 
     def UpdateNeighborMetaData(self, request, context):
@@ -259,17 +293,35 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
         # file = open("node_meta.txt", "r")
         # node_meta_dict = eval(file.readlines()[0])
         # file.close()
-        logger.info("NetworkManager.UpdateNeighborMetaData: node_meta_dict: " + str(node_meta_dict))
+        #logger.info("NetworkManager.UpdateNeighborMetaData: node_meta_dict: " + str(node_meta_dict))
 
-        logger.info("NetworkManager.UpdateNeighborMetaData: updating node_meta_dict: " + str(node_meta_dict))
+        #logger.info("NetworkManager.UpdateNeighborMetaData: updating node_meta_dict: " + str(node_meta_dict))
         # file = open("node_meta.txt", "w")
-        node_meta_dict.update(eval(request.node_meta_dict))
+        #node_meta_dict.update(eval(request.node_meta_dict))
         # file.write(str(node_meta_dict))
         # file.close()
-        logger.info("NetworkManager.UpdateNeighborMetaData: node_meta_dict: " + str(node_meta_dict))
-        logger.info("NetworkManager.UpdateNeighborMetaData: my_pos: " + str(my_node_coordinates))
+        my_pos = node_connections.connection_dict[NodePosition.CENTER].node_coordinates
+        print(type(my_pos))
+        print(request.node_meta_dict)
+        node_coord = list(eval(request.node_meta_dict).keys())[0]
+        print(node_coord)
+        neighbor_pos_dict = helper.get_neighbor_coordinates(my_pos)
+        logger.info("neighbor_pos_dict: {}".format(neighbor_pos_dict))
+        neighbor_pos = ()
+        for item in neighbor_pos_dict.items():
+            logger.info("Item {} {} {} {}".format(item[0], type(item[0]), item[1], type(item[1])))
+            if item[1] == node_coord:  # my_pos => server's pos
+                neighbor_pos = item[0]  # NodePosition.TOP
+                break
+        node_ip = eval(request.node_meta_dict)[node_coord]
+        channel = grpc.insecure_channel(node_ip + ":2750")
+        conn = connection.Connection(channel=channel, node_coordinates=node_coord, node_position=neighbor_pos, node_ip=node_ip)
+        node_connections.add_connection(conn)
+        logger.info("node_connections: {}".format(node_connections.connection_dict))
+        # logger.info("NetworkManager.UpdateNeighborMetaData: node_meta_dict: " + str(node_meta_dict))
+        # logger.info("NetworkManager.UpdateNeighborMetaData: my_pos: " + str(my_node_coordinates))
 
-        return network_manager_pb2.UpdateNeighborMetaDataResponse(status=str(my_node_coordinates))
+        return network_manager_pb2.UpdateNeighborMetaDataResponse(status=str(my_pos))
 
 
 def serve():
@@ -299,7 +351,8 @@ if __name__ == "__main__":
         conn = connection.Connection(channel=None, node_position=NodePosition.CENTER,
                                      node_coordinates=my_node_coordinates, node_ip=my_ip)
         node_connections.add_connection(conn)
-        logger.info("node_connections: {}".format(node_connections))
+        logger.info("node_connections: {}".format(node_connections.connection_dict))
+        # logger.info("node_connections: {}".format(node_connections))
         server_thread = threading.Thread(target=serve)
         server_thread.start()
         server_thread.join()
