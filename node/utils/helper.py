@@ -1,3 +1,4 @@
+from node_position import NodePosition
 
 def get_neighbor_coordinates(node_pos):
     """
@@ -11,4 +12,4 @@ def get_neighbor_coordinates(node_pos):
     left = (x, y - 1)
     right = (x, y + 1)
 
-    return {"top": top, "bottom": bottom, "left": left, "right": right}
+    return {NodePosition.TOP: top, NodePosition.BOTTOM: bottom, NodePosition.LEFT: left, NodePosition.RIGHT: right}
