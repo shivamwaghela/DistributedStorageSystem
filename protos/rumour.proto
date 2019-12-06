@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package rumour;
+
+service Rumour {
+  rpc sendMyData (MyDataRequest) returns (MyDataReply) {};
+  rpc receiveFileData (FileDataRequest) returns (FileDataReply) {};
+}
+
+message MyDataRequest {
+    string hash = 1;
+    string data = 2;
+    int32 memory_usage = 3;
+    int32 cpu_usage = 4;
+    int32 disk_usage = 5;
+    string my_ip = 6;
+    string my_pos = 7;
+}
+
+message FileDataRequest {
+
+}
+message FileDataReply{
+    string hash = 1;
+    string data = 2;
+    int32 memory_usage = 3;
+    int32 cpu_usage = 4;
+    int32 disk_usage = 5;
+    string my_ip = 6;
+    string my_pos = 7;
+}
+message MyDataReply {
+}

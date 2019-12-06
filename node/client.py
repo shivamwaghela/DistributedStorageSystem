@@ -65,3 +65,4 @@ if __name__ == '__main__':
     node_port = str(config["port"])
     chn = grpc.insecure_channel(node_ip + ":" + str(node_port))
     greet(node_ip, chn)
+

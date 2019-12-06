@@ -8,6 +8,8 @@ import logging
 import os
 import random
 import sys
+import rumour_pb2
+import rumour_pb2_grpc
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
@@ -35,6 +37,20 @@ file.close()
 node_meta_dict = {}
 my_pos = (0, 0)
 
+class fileHandle():
+
+    def createFileObj(filename,filebytes):
+        hash = hash_function(filebytes)
+        fileobj = {}
+        fileobj.hash = hash
+        fileobj.data = filename #we need to add more
+        fileobj.cpu_usage = machine_info.get_my_cpu_usage()
+        fileobj.memory_usage = machine_info.get_my_memory_usage()
+        fileobj.disk_usage = machine_info.get_my_disk_usage()
+        fileobj.my_pos = my_pos #should change get it from somewhere
+        fileobj.my_ip = machine_info.get_ip()
+        gossip_queue.append(fileobj) #gossip_queue inmemory redis maybe
+        file_hash_dict.append(fileobj) #inmemory redis maybe
 
 class Greeter(greet_pb2_grpc.GreeterServicer):
 
@@ -200,6 +216,8 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
 
         return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos), your_pos=str(new_node_pos),
                                     additional_connections=additional_connections)
+
+
 
 
 class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
