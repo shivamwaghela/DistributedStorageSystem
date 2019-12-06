@@ -18,11 +18,11 @@ def sendRumour(channel, fileobj):
     rumour_stub = rumour_pb2_grpc.RumourStub(channel)
     rumour_stub.sendMyData(rumour_pb2.MyDataRequest(hash=fileobj.hash,
                                                             data=fileobj.data,
-                                                            cpu_usage=fileobj.cpu_usage,
                                                             memory_usage=fileobj.memory_usage,
+                                                            cpu_usage=fileobj.cpu_usage,
                                                             disk_usage=fileobj.disk_usage,
-                                                            my_pos=fileobj.my_pos,
-                                                            my_ip=fileobj.my_ip
+                                                            my_ip=fileobj.my_ip,
+                                                            my_pos=fileobj.my_pos
                                                             ))
 def receiveRumour(channel):
     rumour_stub = rumour_pb2_grpc.RumourStub(channel)
