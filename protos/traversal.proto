@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package traversal;
+
+service Traversal {
+    rpc ReceiveRequest (GetReceieveRequest) returns (GetReceiveResponse);
+}
+
+message GetReceieveRequest {
+    string filename = 1;
+    repeated string stack = 2;
+    repeated string visited = 3;
+    
+}
+
+message GetReceiveResponse {
+    string node_ip = 1;
+    string message = 2;
+}
