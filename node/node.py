@@ -341,7 +341,7 @@ class TraversalServicer(traversal_pb2_grpc.TraversalServicer):
             for file in files:
                 currentFileName = os.path.basename(file)
                 if currentFileName == request.filename:
-                    return traversal_pb2.GetReceiveResponse(file_bytes=file, request_id=request_id)
+                    return traversal_pb2.GetReceiveResponse(file_bytes=file, request_id=request.request_id)
                 else:
                     #create request object
                     curr_filename = request.filename
@@ -351,17 +351,17 @@ class TraversalServicer(traversal_pb2_grpc.TraversalServicer):
                     # channel = grpc.insecure_channel('localhost:50051')
                     # add neighbors to stack. before adding check if neighbor is already visited.
                     for neighbor in connection_dict.items():
-                        if neighbor[1].node_ip in (eval(visited)):
+                        if neighbor[1].node_ip in (eval(curr_visited)):
                             continue
                         else:
-                            curr_stack = eval(stack)
+                            curr_stack = eval(curr_stack)
                             curr_stack.append(neighbor[1])
                             # request_object.stack = curr_stack
                     curr_stack_object = curr_stack.pop()
                     stub = traversal_pb2_grpc.TraversalStub(curr_stack_object.channel)
                     request_object = traversal_pb2.GetReceieveRequest(filename = curr_filename, request_id = curr_request_id, stack = curr_stack, visited = curr_visited)
                     stub.ReceiveRequest(request_object)
-                    
+
 
 
 def serve():
