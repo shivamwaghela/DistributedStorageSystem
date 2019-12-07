@@ -8,12 +8,12 @@ service Traversal {
 
 message GetReceieveRequest {
     string filename = 1;
-    repeated string stack = 2;
-    repeated string visited = 3;
-    
+    string request_id = 2;
+    string stack = 3;
+    string visited = 4;
 }
 
 message GetReceiveResponse {
-    string node_ip = 1;
-    string message = 2;
+    string file_bytes = 1;
+    string request_id = 2;
 }
