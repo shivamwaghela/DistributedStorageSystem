@@ -17,6 +17,8 @@ import greet_pb2
 import greet_pb2_grpc
 import network_manager_pb2
 import network_manager_pb2_grpc
+import traversal_pb2.py
+import traversal_pb2_grpc.py
 import redis
 
 #TODO - Replace with redis hostname, port, password 
@@ -273,28 +275,43 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
 
         return network_manager_pb2.UpdateNeighborMetaDataResponse(status=str(my_node_coordinates))
 
-# Pseudo code
-class Traversal(network_manager_pb2_grpc.NetworkManagerServicer): #TODO - replace this with traversal proto
+
+class TraversalServicer(traversal_pb2_grpc.TraversalServicer): 
     def ReceiveRequest(self, request, context):
         logger.info("Here")
-        request_thread = threading.Thread(target=handleRequest, args=(request.filename))
+        #Check if file is present on my node
+        dir_path = os.path.dirname(os.path.realpath(__file__)) 
+        for root, dirs, files in os.walk(dir_path): 
+            for file in files:
+                currentFileName = os.path.basename(file)
+                if currentFileName == request.filename:
+                    return traversal_pb2.GetReceiveResponse(file_bytes=file, request_id=request_id)
+                else:
+                    #create request object
+                    curr_filename = request.filename
+                    curr_request_id = request.request_id
+                    curr_stack = request.stack
+                    curr_visited = request.visited
+                    # channel = grpc.insecure_channel('localhost:50051')
+                    # add neighbors to stack. before adding check if neighbor is already visited.
+                    for neighbor in connection_dict.items():
+                        if neighbor[1].node_ip in (eval(visited)):
+                            continue
+                        else:
+                            curr_stack = eval(stack)
+                            curr_stack.append(neighbor[1])
+                            # request_object.stack = curr_stack
+                    curr_stack_object = curr_stack.pop()
+                    stub = traversal_pb2_grpc.TraversalStub(curr_stack_object.channel)
+                    request_object = traversal_pb2.GetReceieveRequest(filename = curr_filename, request_id = curr_request_id, stack = curr_stack, visited = curr_visited)
+                    stub.ReceiveRequest(request_object)
+                    
 
-def handleRequest(request):
-    #Check if file is present on my node
-    if not r.exists(request.filename):
-        request.visited.append(machine_info.get_ip()) 
-        # Add neighbours IPs to request.stack
-        # Loop over whatever data structure the list of neighbor IPs is stored in
-        for neighbor in neighbour_list:
-            request.stack.append(neighbor)
-        dest_node_ip = stack.pop()
-        # Forward request to this dest_node_ip
-    else:
-        return response
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
     network_manager_pb2_grpc.add_NetworkManagerServicer_to_server(NetworkManager(), server)
+    traversal_pb2_grpc.add_TraversalServicer_to_server(TraversalServicer(), server)
     server.add_insecure_port("[::]:" + PORT)
     logger.info("Server starting at port " + PORT)
     server.start()
@@ -331,6 +348,7 @@ if __name__ == "__main__":
         channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
         client_thread = threading.Thread(target=Greeter.greet, args=(node_ip, channel))
         server_thread = threading.Thread(target=serve)
+        traversal_thread = threading.Thread(target=ReceiveRequest, args=(request))
         client_thread.start()
         server_thread.start()
         server_thread.join()
