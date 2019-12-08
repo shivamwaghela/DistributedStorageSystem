@@ -46,3 +46,21 @@ python3 node/client.py 10.0.0.1
 ```
 python3 node/server.py
 ```
+## Team Details
+### Mesh Team (Mesh Creation)
+- Shivam Waghela
+- Pranjal Sharma
+- Nehal Sharma
+- Ankita Chikodi
+- Shivang Mistry
+### Mesh Team (Node Traversal)
+- Sanjna Dhamejani
+- Amruta Saraf
+- Ramya Iyer
+- Drushti Thakkar
+### Mesh Team (Gossip)
+- Kavya Chennoju
+- Tanaji Jadhav
+- Pooja Gupta
+- Megha
+- Siddharta Reddy
