@@ -7,7 +7,7 @@ service Traversal {
 }
 
 message GetReceieveRequest {
-    string filename = 1;
+    string hash_id = 1;
     string request_id = 2;
     string stack = 3;
     string visited = 4;

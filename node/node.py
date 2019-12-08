@@ -280,19 +280,19 @@ class TraversalServicer(traversal_pb2_grpc.TraversalServicer):
     def ReceiveRequest(self, request, context):
         logger.info("Here")
         channel = grpc.insecure_channel('localhost:5555')
-        fileServerStub = ../CMPE-275-MemoryStorage/src/chunk_pb2_grpc.FileServerServicer #placeholder to get william's code
+        fileServerStub = ../CMPE-275-MemoryStorage/src/chunk_pb2_grpc.FileServerServicer(channel) #placeholder to get william's code
         #Check if file is present on my node
-        app_n = "dropbox_app"
-        file_p = "data/test_in.txt"
-        output_path = "data/test_out.txt"
-        file_n = os.path.basename(file_p)
-        currentFile = fileServerStub.download(app_n,  file_n, output_path)
+        # app_n = "dropbox_app"
+        # file_p = request.filename
+        # output_path = "data/test_out.txt"
+        # file_n = os.path.basename(file_p)
+        currentFile = fileServerStub.download(request.hash_id) #decode the encode file
         if currentFile != None:
-            return currentFile
-            # return traversal_pb2.GetReceiveResponse(file_bytes=file, request_id=request.request_id)
+            # return currentFile.decode
+            return traversal_pb2.GetReceiveResponse(file_bytes=currentFile.decode, request_id=request.request_id)
         else:
             #create request object
-            curr_filename = request.filename
+            curr_hash = request.hash_id
             curr_request_id = request.request_id
             curr_stack = request.stack
             curr_visited = request.visited
@@ -307,7 +307,7 @@ class TraversalServicer(traversal_pb2_grpc.TraversalServicer):
                     # request_object.stack = curr_stack
             curr_stack_object = curr_stack.pop()
             stub = traversal_pb2_grpc.TraversalStub(curr_stack_object.channel)
-            request_object = traversal_pb2.GetReceieveRequest(filename = curr_filename, request_id = curr_request_id, stack = curr_stack, visited = curr_visited)
+            request_object = traversal_pb2.GetReceieveRequest(hash_id = curr_hash, request_id = curr_request_id, stack = curr_stack, visited = curr_visited)
             stub.ReceiveRequest(request_object)
 
 
