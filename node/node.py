@@ -279,32 +279,36 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
 class TraversalServicer(traversal_pb2_grpc.TraversalServicer): 
     def ReceiveRequest(self, request, context):
         logger.info("Here")
+        channel = grpc.insecure_channel('localhost:5555')
+        fileServerStub = ../CMPE-275-MemoryStorage/src/chunk_pb2_grpc.FileServerServicer #placeholder to get william's code
         #Check if file is present on my node
-        dir_path = os.path.dirname(os.path.realpath(__file__)) 
-        for root, dirs, files in os.walk(dir_path): 
-            for file in files:
-                currentFileName = os.path.basename(file)
-                if currentFileName == request.filename:
-                    return traversal_pb2.GetReceiveResponse(file_bytes=file, request_id=request.request_id)
+        app_n = "dropbox_app"
+        file_p = "data/test_in.txt"
+        output_path = "data/test_out.txt"
+        file_n = os.path.basename(file_p)
+        currentFile = fileServerStub.download(app_n,  file_n, output_path)
+        if currentFile != None:
+            return currentFile
+            # return traversal_pb2.GetReceiveResponse(file_bytes=file, request_id=request.request_id)
+        else:
+            #create request object
+            curr_filename = request.filename
+            curr_request_id = request.request_id
+            curr_stack = request.stack
+            curr_visited = request.visited
+            # channel = grpc.insecure_channel('localhost:50051')
+            # add neighbors to stack. before adding check if neighbor is already visited.
+            for neighbor in connection_dict.items():
+                if neighbor[1].node_ip in (eval(curr_visited)):
+                    continue
                 else:
-                    #create request object
-                    curr_filename = request.filename
-                    curr_request_id = request.request_id
-                    curr_stack = request.stack
-                    curr_visited = request.visited
-                    # channel = grpc.insecure_channel('localhost:50051')
-                    # add neighbors to stack. before adding check if neighbor is already visited.
-                    for neighbor in connection_dict.items():
-                        if neighbor[1].node_ip in (eval(curr_visited)):
-                            continue
-                        else:
-                            curr_stack = eval(curr_stack)
-                            curr_stack.append(neighbor[1])
-                            # request_object.stack = curr_stack
-                    curr_stack_object = curr_stack.pop()
-                    stub = traversal_pb2_grpc.TraversalStub(curr_stack_object.channel)
-                    request_object = traversal_pb2.GetReceieveRequest(filename = curr_filename, request_id = curr_request_id, stack = curr_stack, visited = curr_visited)
-                    stub.ReceiveRequest(request_object)
+                    curr_stack = eval(curr_stack)
+                    curr_stack.append(neighbor[1])
+                    # request_object.stack = curr_stack
+            curr_stack_object = curr_stack.pop()
+            stub = traversal_pb2_grpc.TraversalStub(curr_stack_object.channel)
+            request_object = traversal_pb2.GetReceieveRequest(filename = curr_filename, request_id = curr_request_id, stack = curr_stack, visited = curr_visited)
+            stub.ReceiveRequest(request_object)
 
 
 
