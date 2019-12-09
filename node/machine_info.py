@@ -4,7 +4,7 @@ import socket
 from psutil import cpu_percent, virtual_memory, disk_usage
 
 
-def get_ip():
+def get_my_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         s.connect(('10.0.0.0', 1))
