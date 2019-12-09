@@ -1,4 +1,5 @@
 from concurrent import futures
+from collections import deque
 import grpc
 import logging
 import sys
@@ -8,7 +9,7 @@ sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 
-
+import gossip
 import connection
 import helper
 import random
@@ -19,10 +20,11 @@ import greet_pb2
 import greet_pb2_grpc
 import network_manager_pb2
 import network_manager_pb2_grpc
-
+import heartbeat
 
 PORT = "2750"
-
+channels = []
+gossip_queue = deque()
 ## Client
 def greet(ip, channel):
     global node_ip, node_port, my_ip
@@ -86,7 +88,7 @@ def greet(ip, channel):
 class Greeter(greet_pb2_grpc.GreeterServicer):
 
     def SayHello(self, request, context):
-        global connection_dict, my_pos, node_meta_dict, my_ip
+        global connection_dict, my_pos, node_meta_dict, my_ip, heartbeatcount
         my_pos = eval(str(node_connections.connection_dict[NodePosition.CENTER].node_coordinates))
         print(eval(str(my_pos)))
         # logger.info("my_pos", str(my_pos))
@@ -252,9 +254,9 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
                                       node_coordinates=new_node_pos, node_ip=request.name)
 
         node_connections.add_connection(conn)
-
+        gossip_queue.append({"ip":request.name,"pos":new_node_pos})
         return greet_pb2.HelloReply(message='Hello, %s!' % request.name, my_pos=str(my_pos), your_pos=str(new_node_pos),
-                                    additional_connections=additional_connections)
+                                    additional_connections=additional_connections,heartbeatcount=heartbeatcount)
 
 
 class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
@@ -310,6 +312,7 @@ def serve():
     server.wait_for_termination()
 
 
+
 if __name__ == "__main__":
     my_ip = machine_info.get_my_ip()
     logging.basicConfig(filename='node.log', filemode='w',
@@ -341,6 +344,12 @@ if __name__ == "__main__":
         channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
         client_thread = threading.Thread(target=greet, args=(node_ip, channel))
         server_thread = threading.Thread(target=serve)
+        gossip_maintain_thread = threading.Thread(target=gossip.gossip)
+        heartbeat_thread = threading.Thread(target=heartbeat.heartbeat)
+        heartbeat_thread.start()
+        memory_maintain_thread = threading.Thread(target=gossip.receiveMemoryDetails)
+        memory_maintain_thread.start()
+        gossip_maintain_thread.start()
         client_thread.start()
         server_thread.start()
         server_thread.join()

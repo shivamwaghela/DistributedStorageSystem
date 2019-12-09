@@ -11,7 +11,7 @@ import sys
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
-
+import gossip
 import helper
 import machine_info
 import greet_pb2
