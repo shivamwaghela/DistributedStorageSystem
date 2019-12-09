@@ -57,7 +57,7 @@ python3 node/server.py
 - Sanjna Dhamejani
 - Amruta Saraf
 - Ramya Iyer
-- Drushti Thakkar
+- Drusti Thakkar
 ### Mesh Team (Gossip)
 - Kavya Chennoju
 - Tanaji Jadhav
