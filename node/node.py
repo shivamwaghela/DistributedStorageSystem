@@ -327,13 +327,17 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
         return network_manager_pb2.UpdateNeighborMetaDataResponse(status=str(my_pos))
 
 
+# XXX
 def find_data(hash_id):
     return random.choice([True, False])
 
+
+# XXX
 def fetch_data(hash_id):
     return "data"
 
 
+# XXX
 class Traversal(traversal_pb2_grpc.TraversalServicer):
     def ReceiveData(self, request, context):
         TraversalResponseStatus = traversal_response_status.TraversalResponseStatus
@@ -384,6 +388,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                                                  status=TraversalResponseStatus.FORWARDED)
 
 
+# XXX
 def forward_receive_data_request(node_ip, request):
     logger.info("forward_receive_data_request: node_ip: {}".format(node_ip))
     channel = None
