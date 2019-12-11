@@ -12,6 +12,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 import connection
 import helper
 import random
+import traversal_response_status
 import node_connections
 from node_position import NodePosition
 import machine_info
@@ -19,6 +20,8 @@ import greet_pb2
 import greet_pb2_grpc
 import network_manager_pb2
 import network_manager_pb2_grpc
+import traversal_pb2.py
+import traversal_pb2_grpc.py
 
 
 PORT = "2750"
@@ -324,10 +327,85 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
         return network_manager_pb2.UpdateNeighborMetaDataResponse(status=str(my_pos))
 
 
+def find_data(hash_id):
+    return random.choice([True, False])
+
+def fetch_data(hash_id):
+    return "data"
+
+
+class Traversal(traversal_pb2_grpc.TraversalServicer):
+    def ReceiveData(self, request, context):
+        TraversalResponseStatus = traversal_response_status.TraversalResponseStatus
+        logger.info("Traversal.ReceiveData hash_id:{} request_id:{} stack:{} visited:{}"
+                    .format(request.hash_id, request.request_id, request.stack, request.visited))
+        # Check if the file exits on current node
+        if find_data(request.hash_id):
+            return traversal_pb2.ReceiveDataResponse(file_bytes=fetch_data(request.hash_id),
+                                                     request_id=request.request_id,
+                                                     node_ip=my_ip)
+
+        # add neighbors to stack. before adding check if neighbor is already visited.
+        stack = eval(request.stack)
+        visited = eval(request.visited)
+
+        if len(stack) == 0 and len(visited) != 0:
+            logger.info("Traversal.ReceiveData: len(stack) == 0 and len(visited) != 0")
+            # visited all the nodes but file not found
+            return traversal_pb2.ReceiveDataResponse(file_bytes=None,
+                                                     request_id=request.request_id,
+                                                     node_ip=my_ip,
+                                                     status=TraversalResponseStatus.NOT_FOUND)
+
+        # forward the request
+        visited.append(my_ip)
+        logger.info("Traversal.ReceiveData: visited: {}".format(visited))
+
+        # add neighbors to stack
+        for item in node_connections.connection_dict.items():
+            if item[1].node_ip not in visited:
+                stack.append(item[1].node_ip) # items = {TOP: conn obj}
+
+        logger.info("Traversal.ReceiveData: stack: {}".format(stack))
+        forwarded_node_ip = ""
+        while len(stack) > 0:
+            forwarded_node_ip = stack.pop()
+            if forwarded_node_ip not in visited:
+                break
+
+        logger.info("Traversal.ReceiveData: forwarded_node_ip: {}".format(forwarded_node_ip))
+
+        forward_request_thread = threading.Thread(target=forward_receive_data_request, args=(forwarded_node_ip, request))
+        forward_request_thread.start()
+
+        return traversal_pb2.ReceiveDataResponse(file_bytes=None,
+                                                 request_id=request.request_id,
+                                                 node_ip=forwarded_node_ip,
+                                                 status=TraversalResponseStatus.FORWARDED)
+
+
+def forward_receive_data_request(node_ip, request):
+    logger.info("forward_receive_data_request: node_ip: {}".format(node_ip))
+    channel = None
+    for item in node_connections.connection_dict.items():
+        if item[1].node_ip == node_ip:
+            channel = item[1].channel
+            break
+
+    traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
+    response = traversal_stub.ReceiveData(hash_id=request.hash_id,
+                                          request_id=request.request_id,
+                                          stack=request.stack,
+                                          visited=request.visited)
+    logger.info("forward_receive_data_request: response: {}".format(response))
+    return response
+
+
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
     greet_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
     network_manager_pb2_grpc.add_NetworkManagerServicer_to_server(NetworkManager(), server)
+    traversal_pb2_grpc.add_TraversalServicer_to_server(Traversal(), server)
     server.add_insecure_port("[::]:" + PORT)
     logger.info("Server starting at port " + PORT)
     server.start()
@@ -366,6 +444,7 @@ if __name__ == "__main__":
         channel = grpc.insecure_channel(node_ip + ":" + str(node_port))
         client_thread = threading.Thread(target=greet, args=(node_ip, channel))
         server_thread = threading.Thread(target=serve)
+        traversal_thread = threading.Thread(target=ReceiveRequest, args=(request))
         client_thread.start()
         server_thread.start()
         server_thread.join()
