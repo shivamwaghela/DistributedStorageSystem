@@ -7,15 +7,12 @@ service Greeter {
 }
 
 message HelloRequest {
-  string name = 1;
-  float cpu_usage = 2;
-  int64 memory_usage = 3;
-  int64 disk_usage = 4;
+  string client_node_ip = 1;
 }
 
 message HelloReply {
     string message = 1;
-    string my_pos = 2;
-    string your_pos = 3;
+    string client_node_coordinates = 2;
+    string server_node_coordinates = 3;
     string additional_connections = 4;
 }

@@ -1,5 +1,6 @@
 from node_position import NodePosition
 
+
 def get_neighbor_coordinates(node_pos):
     """
     Calculates node's neighbor's cartesian coordinates
