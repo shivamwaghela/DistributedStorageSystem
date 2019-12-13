@@ -34,7 +34,8 @@ class Client:
 
         logger.info("Response from {}: {}".format(server_node_ip, response))
         if response.client_node_coordinates is None:
-            logger.error("Cannot join {}. Maximum connection capacity reached.".format(server_node_ip))
+            logger.error("Cannot join {}. Maximum node connection capacity reached or node already in the network."
+                         .format(server_node_ip))
             return
 
         # Get coordinates => tuple(x,y)

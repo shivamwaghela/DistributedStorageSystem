@@ -185,7 +185,12 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
                                      node_coordinates=new_node_coordinates,
                                      node_ip=request.client_node_ip)
 
-        globals.node_connections.add_connection(conn)
+        if not globals.node_connections.add_connection(conn):
+            logger.debug("Node {} already in the network".format(request.client_node_ip))
+            return greet_pb2.HelloReply(message='Hello, %s!' % request.client_node_ip,
+                                        client_node_coordinates=None,
+                                        server_node_coordinates=str(globals.my_coordinates))
+
         logger.info("node_connections: {}".format(globals.node_connections.connection_dict))
 
         # Send my position and the added node's position
