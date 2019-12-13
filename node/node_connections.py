@@ -1,5 +1,5 @@
 import grpc
-
+import globals
 
 class NodeConnections:
     """
@@ -34,7 +34,9 @@ class NodeConnections:
             if item[1].node_ip == connection.node_ip:
                 return False
 
-        self.connection_dict[connection.node_position] = connection
+        with globals.lock:
+            self.connection_dict[connection.node_position] = connection
+
         return True
 
     def remove_connection(self, node_position):
@@ -44,7 +46,8 @@ class NodeConnections:
         :return: Returns True if connection was removed successfully, False otherwise
         """
         if node_position in self.connection_dict:
-            del self.connection_dict[node_position]
+            with globals.lock:
+                del self.connection_dict[node_position]
             return True
 
         return False
