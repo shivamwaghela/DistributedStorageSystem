@@ -45,7 +45,7 @@ def receiveheartbeat(channel):
     response = rumour_stub.receiveheartbeat(rumour_pb2.HeartBeatReply())
     if response.pos in whole_mesh_dict:
         if response.ip == whole_mesh_dict[response.pos]:
-            heartbeat_meta_dict[response.pos+"-"+response.ip] = response.heartbeatcount
+            heartbeat_meta_dict[response.pos+"-"+response.ip] = response.heartbeatcount #
         elif response.ip != whole_mesh_dict[response.pos]:
             heartbeat_meta_dict.remove(response.pos+"-"+whole_mesh_dict[response.pos])
             whole_mesh_dict[response.pos] = response.ip

@@ -9,6 +9,17 @@ service Rumour {
   rpc sendMemoryData (MemoryDataRequest) returns (MemoryStatsReply) {};
   rpc sendheartbeat (HeartBeatRequest) returns (HeartBeatReply) {};
   rpc receiveheartbeat (HeartBeatReply) returns (HeartBeatRequest) {};
+  rpc sendRequestForEdge (EdgeNodeRequest) returns (EdgeNodeReply) {};
+  rpc receiveRequestForEdge (EdgeNodeReply) returns (EdgeNodeRequest) {}
+}
+message EdgeNodeRequest{
+    string deletednode_pos = 1;
+    string deletednode_neighbours = 2;
+    string dir1 = 3;
+    string dir2 = 4;
+}
+message EdgeNodeReply{
+
 }
 message HeartBeatRequest{
     string ip = 1;
