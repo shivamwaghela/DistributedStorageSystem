@@ -33,7 +33,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         logger.info("Traversal.ReceiveData hash_id:{} request_id:{} stack:{} visited:{}"
                     .format(request.hash_id, request.request_id, request.stack, request.visited))
         # Check if the file exits on current node
-        if find_data(request.hash_id):
+        if True:
             return traversal_pb2.ReceiveDataResponse(file_bytes=fetch_data(request.hash_id),
                                                      request_id=request.request_id,
                                                      node_ip=globals.my_ip)
@@ -72,9 +72,9 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         forward_request_thread.start()
 
         return traversal_pb2.ReceiveDataResponse(file_bytes=None,
-                                                 request_id=request.request_id,
-                                                 node_ip=forwarded_node_ip,
-                                                 status=TraversalResponseStatus.FORWARDED)
+                                                 request_id=str(request.request_id),
+                                                 node_ip=str(forwarded_node_ip),
+                                                 status=str(TraversalResponseStatus.FORWARDED))
 
 
 # XXX
@@ -87,9 +87,11 @@ def forward_receive_data_request(node_ip, request):
             break
 
     traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
-    response = traversal_stub.ReceiveData(hash_id=request.hash_id,
-                                          request_id=request.request_id,
-                                          stack=request.stack,
-                                          visited=request.visited)
+    response = traversal_stub.ReceiveData(
+        traversal_pb2.ReceiveDataRequest(
+                            hash_id=str(request.hash_id),
+                            request_id=str(request.request_id),
+                            stack=str(request.stack),
+                            visited=str(request.visited)))
     logger.info("forward_receive_data_request: response: {}".format(response))
     return response
