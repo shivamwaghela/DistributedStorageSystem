@@ -30,6 +30,10 @@ class NodeConnections:
         if connection.node_position in self.connection_dict:
             return False
 
+        for item in self.connection_dict.items():
+            if item[1].node_ip == connection.node_ip:
+                return False
+
         self.connection_dict[connection.node_position] = connection
         return True
 
