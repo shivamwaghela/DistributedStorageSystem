@@ -53,6 +53,8 @@ if __name__ == "__main__":
         logger.debug("Starting server thread...")
         server_thread = threading.Thread(target=serve)
         server_thread.start()
+        # traversal_thread = threading.Thread(target=send_request)
+        # traversal_thread.start()
         server_thread.join()
     else:
         if len(sys.argv) != 2:

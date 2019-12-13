@@ -33,7 +33,7 @@ class Client:
         response = greeter_stub.SayHello(greet_pb2.HelloRequest(client_node_ip=globals.my_ip))
 
         logger.info("Response from {}: {}".format(server_node_ip, response))
-        if response.client_node_coordinates is None:
+        if eval(response.client_node_coordinates) is None:
             logger.error("Cannot join {}. Maximum node connection capacity reached or node already in the network."
                          .format(server_node_ip))
             return

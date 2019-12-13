@@ -51,7 +51,7 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         if len(available_pos_coord_dict) == 0:
             logger.debug("len(available_pos_coord_dict) == 0")
             return greet_pb2.HelloReply(message='Hello, %s!' % request.client_node_ip,
-                                        client_node_coordinates=None,
+                                        client_node_coordinates=str(None),
                                         server_node_coordinates=str(globals.my_coordinates))
 
         # Find position/coordinates such that it creates a compact network structure
@@ -188,7 +188,7 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         if not globals.node_connections.add_connection(conn):
             logger.debug("Node {} already in the network".format(request.client_node_ip))
             return greet_pb2.HelloReply(message='Hello, %s!' % request.client_node_ip,
-                                        client_node_coordinates=None,
+                                        client_node_coordinates=str(None),
                                         server_node_coordinates=str(globals.my_coordinates))
 
         logger.info("node_connections: {}".format(globals.node_connections.connection_dict))
