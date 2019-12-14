@@ -110,11 +110,25 @@ def forward_receive_data_request(node_ip, request):
 def forward_response_data(file_bytes, request_id, node_ip, status, path):
     curr_path = eval(path)
     curr_coordinates = curr_path.pop()
+    
+    #check if data reached the initial invoking node
+    if curr_path.empty():
+        return file_bytes
+    
+    #get the channel through which the data will be propogated
     for item in globals.node_connections.connection_dict.items():
         if item[1].node_coordinates == curr_coordinates:
             channel = item[1].channel
             break
     
+    #check if channel is alive. if not, update the 2D matrix and calculate a new shortest path
+    if not channel.isAlive():
+        mesh = create_logical_mesh()
+        mesh[curr_coordinates[0]][curr_coordinates[1]] = 0
+        curr_path = find_shortest_path(mesh)
+        forward_response_data(file_bytes, request_id, node_ip, status, curr_path)
+
+    #forward the request
     traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
     response = traversal_stub.RespondData(
         traversal_pb2.RespondDataRequest(
@@ -122,7 +136,7 @@ def forward_response_data(file_bytes, request_id, node_ip, status, path):
             request_id=request_id,
             node_ip=node_ip,
             status=status,
-            path=path
+            path=curr_path
         ))
     return response
 
