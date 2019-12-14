@@ -120,6 +120,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                 status=status,
                 path=curr_path
             ))
+        logger.info("Current response is: response : {}".format(response))
         return response
 
 
@@ -148,7 +149,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         value_list = list(gossip_dictionary.values())
         for item in value_list:
             mesh[item[0]][item[1]] = 1
-        
+        logger.info("Current mesh is: mesh : {}".format(mesh))
         return mesh
 
     def find_shortest_path(self, mesh):
