@@ -18,4 +18,5 @@ message ReceiveDataResponse {
     string request_id = 2;
     string node_ip = 3;
     string status = 4;
+    string path = 5;
 }

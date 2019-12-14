@@ -1,5 +1,6 @@
 import os
 import sys
+from queue import PriorityQueue
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
@@ -14,7 +15,8 @@ import threading
 
 
 logger = logging.getLogger(__name__)
-
+gossip_dictionary = {"10.0.0.1": (0,0), "10.0.0.3": (0,2), "10.0.0.2": (0,1), "10.0.0.5": (1,2), "10.0.0.6": (1,0), "10.0.0.4": (1,1), "10.0.0.7": (2,1), "10.0.0.9": (2,0), "10.0.0.8": (2,2)}
+q = PriorityQueue()
 
 # XXX
 def find_data(hash_id):
@@ -34,6 +36,8 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                     .format(request.hash_id, request.request_id, request.stack, request.visited))
         # Check if the file exits on current node
         if True:
+            curr_mesh = create_logical_mesh()
+            find_shortest_path(curr_mesh)
             return traversal_pb2.ReceiveDataResponse(file_bytes=fetch_data(request.hash_id),
                                                      request_id=request.request_id,
                                                      node_ip=globals.my_ip)
@@ -95,3 +99,35 @@ def forward_receive_data_request(node_ip, request):
                             visited=str(request.visited)))
     logger.info("forward_receive_data_request: response: {}".format(response))
     return response
+
+#creating a 2D matrix to keep track of live and dead nodes
+def create_logical_mesh():
+    min_row = list(gossip_dictionary.values())[0][0]
+    min_col = list(gossip_dictionary.values())[0][1]
+    max_row = list(gossip_dictionary.values())[len(gossip_dictionary)-1][0]
+    max_col = list(gossip_dictionary.values())[len(gossip_dictionary)-1][1]
+
+    for key in gossip_dictionary:
+        if gossip_dictionary[key][0] < min_row:
+            min_row = gossip_dictionary[key][0]
+        if gossip_dictionary[key][1] < min_col:
+            min_col = gossip_dictionary[key][1]
+        if gossip_dictionary[key][0] > max_row:
+            max_row = gossip_dictionary[key][0]
+        if gossip_dictionary[key][1] > max_col:
+            max_col = gossip_dictionary[key][1]
+
+    cols = max_col - min_col + 1
+    rows = max_row - min_col + 1
+
+    mesh = [[0]*cols]*rows
+    
+    value_list = list(gossip_dictionary.values())
+    for item in value_list:
+        mesh[item[0]][item[1]] = 1
+    
+    return mesh
+
+def find_shortest_path(mesh):
+    path = ""
+    return path
