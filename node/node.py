@@ -24,6 +24,7 @@ from server import Greeter
 from network_manager import NetworkManager
 from node_traversal import Traversal
 from storage_manager import StorageManagerServer
+from pulse import Pulse
 
 
 def serve():
@@ -42,6 +43,7 @@ def serve():
     server.wait_for_termination()
 
 
+# XXX
 def send_request():
     time.sleep(10)
     server_node_ip = "10.0.0.3"
@@ -80,6 +82,8 @@ if __name__ == "__main__":
         server_thread.start()
         # traversal_thread = threading.Thread(target=send_request)
         # traversal_thread.start()
+        pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
+        pulse_thread.start()
         server_thread.join()
     else:
         if len(sys.argv) != 2:
@@ -100,4 +104,8 @@ if __name__ == "__main__":
         # storage_thread.start()
 
         server_thread.start()
+
+        pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
+        pulse_thread.start()
+
         server_thread.join()
