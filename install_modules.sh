@@ -24,6 +24,10 @@ else
 
     echo "Installing psutil"
     pip3 install psutil --user
+
+    echo "Installing sortedcontainers"
+    pip3 install sortedcontainers --user
+
     exit 0
 fi
 
@@ -51,6 +55,10 @@ else
 
     echo "Installing psutil"
     pip install psutil --user
+
+    echo "Installing sortedcontainers"
+    pip install sortedcontainers --user
+
     exit 0
 fi
 
