@@ -19,6 +19,7 @@ from client import Client
 from server import Greeter
 from network_manager import NetworkManager
 from node_traversal import Traversal
+from pulse import Pulse
 
 
 def serve():
@@ -30,6 +31,22 @@ def serve():
     logger.info("Server starting at port " + str(globals.port))
     server.start()
     server.wait_for_termination()
+
+
+# XXX
+def send_request():
+    time.sleep(10)
+    server_node_ip = "10.0.0.3"
+    logger.info("Connecting to {} at port {}...".format(server_node_ip, globals.port))
+    traversal_stub = traversal_pb2_grpc.TraversalStub(globals.node_connections.connection_dict[NodePosition.RIGHT].channel)
+    logger.debug(traversal_stub)
+    response = traversal_stub.ReceiveData(
+        traversal_pb2.ReceiveDataRequest(
+                                        hash_id="hashid",
+                                        request_id="1",
+                                        stack=str([]),
+                                        visited=str([])))
+    logger.info("forward_receive_data_request: response: {}".format(response))
 
 
 if __name__ == "__main__":
@@ -55,6 +72,8 @@ if __name__ == "__main__":
         server_thread.start()
         # traversal_thread = threading.Thread(target=send_request)
         # traversal_thread.start()
+        pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
+        pulse_thread.start()
         server_thread.join()
     else:
         if len(sys.argv) != 2:
@@ -70,4 +89,8 @@ if __name__ == "__main__":
         client_thread.start()
         logger.debug("Starting server thread with target serve...")
         server_thread.start()
+
+        pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
+        pulse_thread.start()
+
         server_thread.join()
