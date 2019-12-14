@@ -2,7 +2,7 @@ class Connection:
     """
     Stores connection information
     channel: gRPC channel
-    node_position: One of the position from Enum (TOP/BOTTOM/LEFT/RIGHT)
+    node_position: One of the position from Enum (TOP/BOTTOM/LEFT/RIGHT/CENTER)
     node_coordinates: tuple containing x & y coordinates
     """
     def __init__(self, channel, node_position, node_coordinates, node_ip):

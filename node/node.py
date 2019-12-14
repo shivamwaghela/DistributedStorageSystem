@@ -14,18 +14,16 @@ import connection
 from node_position import NodePosition
 import greet_pb2_grpc
 import network_manager_pb2_grpc
-import traversal_pb2_grpc
 from client import Client
 from server import Greeter
 from network_manager import NetworkManager
-from node_traversal import Traversal
+from pulse import Pulse
 
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
     greet_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
     network_manager_pb2_grpc.add_NetworkManagerServicer_to_server(NetworkManager(), server)
-    traversal_pb2_grpc.add_TraversalServicer_to_server(Traversal(), server)
     server.add_insecure_port("[::]:" + str(globals.port))
     logger.info("Server starting at port " + str(globals.port))
     server.start()
@@ -50,11 +48,15 @@ if __name__ == "__main__":
         globals.node_connections.add_connection(conn)
         logger.debug("NodeConnections.connection_dict: {}".format(globals.node_connections.connection_dict))
 
-        logger.debug("Starting server thread...")
         server_thread = threading.Thread(target=serve)
+        pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
+
+        logger.debug("Starting server thread...")
         server_thread.start()
-        # traversal_thread = threading.Thread(target=send_request)
-        # traversal_thread.start()
+
+        logger.debug("Starting pulse thread...")
+        pulse_thread.start()
+
         server_thread.join()
     else:
         if len(sys.argv) != 2:
@@ -63,11 +65,15 @@ if __name__ == "__main__":
 
         client_thread = threading.Thread(target=Client.greet, args=(sys.argv[1],))
         server_thread = threading.Thread(target=serve)
-        # XXX
-        #traversal_thread = threading.Thread(target=ReceiveRequest, args=(request))
+        pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
 
         logger.debug("Starting client thread with target greet...")
         client_thread.start()
+
         logger.debug("Starting server thread with target serve...")
         server_thread.start()
+
+        logger.debug("Starting server thread with target serve...")
+        pulse_thread.start()
+
         server_thread.join()

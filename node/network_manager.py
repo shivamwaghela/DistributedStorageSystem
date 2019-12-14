@@ -20,7 +20,7 @@ class NetworkManager(network_manager_pb2_grpc.NetworkManagerServicer):
 
     def GetNodeMetaData(self, request, context):
         """
-        This method is invoked by client to get information about this node's neighbors
+        This method is invoked by client to get information about this node's neighbor nodes
         """
         logger.info("GetNodeMetaData invoked from " + request.client_node_ip)
         server_coord_ip_dict = {}

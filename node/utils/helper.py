@@ -3,7 +3,7 @@ from node_position import NodePosition
 
 def get_neighbor_coordinates(node_pos):
     """
-    Calculates node's neighbor's cartesian coordinates
+    Calculates node's neighbor cartesian coordinates
     :param node_pos: tuple containing node's coordinates
     :return: neighbor coordinates as a dictionary
     """

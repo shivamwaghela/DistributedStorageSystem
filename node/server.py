@@ -47,7 +47,6 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
         logger.debug("available_pos_coord_dict: {}".format(available_pos_coord_dict))
         logger.debug("unavailable_pos_coord_dict: {}".format(unavailable_pos_coord_dict))
 
-        # TODO: if available_pos == 0 forward the request
         if len(available_pos_coord_dict) == 0:
             logger.debug("len(available_pos_coord_dict) == 0")
             return greet_pb2.HelloReply(message='Hello, %s!' % request.client_node_ip,
@@ -55,7 +54,7 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
                                         server_node_coordinates=str(globals.my_coordinates))
 
         # Find position/coordinates such that it creates a compact network structure
-        # Check neighbor or neighbor's neighbor for deciding the position
+        # Check neighbor or neighbor's neighbor for deciding the new node position
         if len(available_pos_coord_dict) == 4:
             # All positions are available
             new_node_position = NodePosition.RIGHT  # default to right position
@@ -78,6 +77,11 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
                                         server_node_coordinates=str(globals.my_coordinates),
                                         additional_connections=str([]))
 
+        new_node_position = None
+        new_node_coordinates = None
+        my_neighbors_neighbor_pos_coord = {}
+        neighbor_coord_ip_dict = {}
+
         # Eliminate the farthest position
         if len(available_pos_coord_dict) == 3:
             logger.debug("len(available_pos) == 3; available_pos_coord_dict: (before)".format(available_pos_coord_dict))
@@ -94,11 +98,6 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
                     and neighbor_pos_coord_dict[NodePosition.RIGHT] == unavailable_pos_coord_dict[NodePosition.RIGHT]:
                 del available_pos_coord_dict[NodePosition.LEFT]
             logger.debug("len(available_pos) == 3; available_pos_coord_dict: (after)".format(available_pos_coord_dict))
-
-        new_node_position = None
-        new_node_coordinates = None
-        my_neighbors_neighbor_pos_coord = {}
-        neighbor_coord_ip_dict = {}
 
         # Eliminate one more option
         if len(available_pos_coord_dict) == 2:
@@ -169,7 +168,6 @@ class Greeter(greet_pb2_grpc.GreeterServicer):
             logger.debug("new_node_coordinates: {}".format(new_node_coordinates))
             logger.debug("new_node_position: {}".format(new_node_position))
 
-        # Assign node a position
         try:
             additional_connections = [neighbor_coord_ip_dict[my_neighbors_neighbor_pos_coord[new_node_position]]]
         except KeyError:
