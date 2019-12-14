@@ -4,6 +4,7 @@ package traversal;
 
 service Traversal {
     rpc ReceiveData (ReceiveDataRequest) returns (ReceiveDataResponse);
+    rpc RespondData (ResponseDataRequest) returns (ResponseDataResponse);
 }
 
 message ReceiveDataRequest {
@@ -14,9 +15,17 @@ message ReceiveDataRequest {
 }
 
 message ReceiveDataResponse {
+    string status = 1;
+}
+
+message ResponseDataRequest {
     string file_bytes = 1;
     string request_id = 2;
     string node_ip = 3;
     string status = 4;
     string path = 5;
+}
+
+message ResponseDataResponse {
+    string status = 1;
 }

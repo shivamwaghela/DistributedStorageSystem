@@ -36,11 +36,12 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                     .format(request.hash_id, request.request_id, request.stack, request.visited))
         # Check if the file exits on current node
         if True:
+            curr_data = fetch_data(request.hash_id)
             curr_mesh = create_logical_mesh()
-            find_shortest_path(curr_mesh)
-            return traversal_pb2.ReceiveDataResponse(file_bytes=fetch_data(request.hash_id),
-                                                     request_id=request.request_id,
-                                                     node_ip=globals.my_ip)
+            curr_path = find_shortest_path(curr_mesh)
+            forward_response_data(curr_data, request.request_id, request.node_ip, traversal_response_status.FOUND, curr_path)
+            # RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
+            return traversal_pb2.ReceiveDataResponse(status = traversal_response_status.FOUND)
 
         # add neighbors to stack. before adding check if neighbor is already visited.
         stack = eval(request.stack)
@@ -80,6 +81,12 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                                                  node_ip=str(forwarded_node_ip),
                                                  status=str(TraversalResponseStatus.FORWARDED))
 
+    def RespondData(self, request, context):
+            t = threading.Thread(target=forward_response_data, args=(request.file_bytes, request.request_id, request.node_ip, request.status, request.path))
+            t.start()
+            return traversal_pb2.ResponseDataResponse(status = traversal_response_status.FORWARDED)
+
+
 
 # XXX
 def forward_receive_data_request(node_ip, request):
@@ -99,6 +106,26 @@ def forward_receive_data_request(node_ip, request):
                             visited=str(request.visited)))
     logger.info("forward_receive_data_request: response: {}".format(response))
     return response
+
+def forward_response_data(file_bytes, request_id, node_ip, status, path):
+    curr_path = eval(path)
+    curr_coordinates = curr_path.pop()
+    for item in globals.node_connections.connection_dict.items():
+        if item[1].node_coordinates == curr_coordinates:
+            channel = item[1].channel
+            break
+    
+    traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
+    response = traversal_stub.RespondData(
+        traversal_pb2.RespondDataRequest(
+            file_bytes=file_bytes,
+            request_id=request_id,
+            node_ip=node_ip,
+            status=status,
+            path=path
+        ))
+    return response
+
 
 #creating a 2D matrix to keep track of live and dead nodes
 def create_logical_mesh():
