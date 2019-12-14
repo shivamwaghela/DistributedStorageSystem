@@ -61,6 +61,6 @@ python3 node/server.py
 ### Mesh Team (Gossip)
 - Kavya Chennoju
 - Tanaji Jadhav
-- Pooja Gupta
+- Pooja Kataria
 - Megha
 - Siddharta Reddy
