@@ -15,10 +15,13 @@ from node_position import NodePosition
 import greet_pb2_grpc
 import network_manager_pb2_grpc
 import traversal_pb2_grpc
+import storage_pb2_grpc
+
 from client import Client
 from server import Greeter
 from network_manager import NetworkManager
 from node_traversal import Traversal
+from storage_manager import StorageManagerServer
 
 
 def serve():
@@ -26,6 +29,8 @@ def serve():
     greet_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
     network_manager_pb2_grpc.add_NetworkManagerServicer_to_server(NetworkManager(), server)
     traversal_pb2_grpc.add_TraversalServicer_to_server(Traversal(), server)
+    storage_pb2_grpc.add_FileServerServicer_to_server(StorageManagerServer(globals.initial_node_memory_size_bytes, globals.initial_page_memory_size_bytes), server)
+
     server.add_insecure_port("[::]:" + str(globals.port))
     logger.info("Server starting at port " + str(globals.port))
     server.start()
@@ -62,6 +67,8 @@ if __name__ == "__main__":
             exit(1)
 
         client_thread = threading.Thread(target=Client.greet, args=(sys.argv[1],))
+        # storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],))
+
         server_thread = threading.Thread(target=serve)
         # XXX
         #traversal_thread = threading.Thread(target=ReceiveRequest, args=(request))
@@ -69,5 +76,9 @@ if __name__ == "__main__":
         logger.debug("Starting client thread with target greet...")
         client_thread.start()
         logger.debug("Starting server thread with target serve...")
+
+        # logger.debug("Starting storage thread with target greet...")
+        # storage_thread.start()
+
         server_thread.start()
         server_thread.join()
