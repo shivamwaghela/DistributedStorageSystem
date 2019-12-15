@@ -12,6 +12,7 @@ import globals
 import connection
 import hb_server
 import hb_client
+import memory_server
 from node_position import NodePosition
 import greet_pb2_grpc
 import network_manager_pb2_grpc
@@ -60,6 +61,9 @@ if __name__ == "__main__":
 
         hb_client_thread = threading.Thread(target=hb_client.hb_client)
         hb_client_thread.start()
+
+        hb_memory_thread = threading.Thread(target=memory_server.sendmemory)
+        hb_memory_thread.start()
         # traversal_thread = threading.Thread(target=send_request)
         # traversal_thread.start()
         server_thread.join()
@@ -77,6 +81,9 @@ if __name__ == "__main__":
         #traversal_thread = threading.Thread(target=ReceiveRequest, args=(request))
         hb_client_thread = threading.Thread(target=hb_client.hb_client)
         hb_client_thread.start()
+
+        hb_memory_thread = threading.Thread(target=memory_server.sendmemory)
+        hb_memory_thread.start()
 
         logger.debug("Starting client thread with target greet...")
         client_thread.start()

@@ -20,10 +20,11 @@ class RumourServicer(rumour_pb2_grpc.RumourServicer):
                                            disk_usage=machine_info.get_my_disk_usage())
 
     def sendLogicalMesh(self,request,context):
+        print("in send")
         return rumour_pb2.LogicalMeshReply(wholemesh=str(hb_server.whole_mesh_dict))
 
 
-if __name__ == "__main__":
+def sendmemory():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     rumour_pb2_grpc.add_RumourServicer_to_server(RumourServicer(), server)
     server.add_insecure_port('[::]:50061')
