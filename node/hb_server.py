@@ -48,8 +48,14 @@ class RumourServicer(rumour_pb2_grpc.RumourServicer):
         updatehearbeatdict(newnodeheartbeatdict)
         if newnodemeshdict:
             updatemeshdict(newnodemeshdict)
+        removednodes = []
+        src_removed_node_dict = eval(request.removednodes)
+        for key in src_removed_node_dict:
+            my_hb = heartbeat_meta_dict[key] if key in heartbeat_meta_dict else 0
+            if (heartbeat_meta_dict[my_ip] - my_hb >= 5):
+                removednodes.append(key)
 
-        return rumour_pb2.HeartBeatReply()
+        return rumour_pb2.HeartBeatReply(removednodes=str(removednodes))
 
 def hb_serve():
     logger.info(globals.my_ip)
