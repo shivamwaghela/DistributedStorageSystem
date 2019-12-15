@@ -49,7 +49,7 @@ def hb_client():
                 gossip_queue.append({"ip":item[1].node_ip,"pos":item[1].node_coordinates})
             if item[1].node_ip != globals.my_ip and item[1].node_ip not in neighbour_dict:
                 neighbour_dict.append(item[1].node_ip)
-
+        print(neighbour_dict)
         time.sleep(5) 
         while gossip_queue:
             element = gossip_queue.popleft()
@@ -62,6 +62,6 @@ def hb_client():
         markNodes(heartbeat_meta_dict)
 
         for neighbour in neighbour_dict:
-            sendMsg(neighbour["ip"], action,whole_mesh_dict,heartbeat_meta_dict)
+            sendMsg(neighbour, action,whole_mesh_dict,heartbeat_meta_dict)
              
     print("Client started...")
