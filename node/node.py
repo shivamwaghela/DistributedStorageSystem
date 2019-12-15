@@ -96,7 +96,7 @@ if __name__ == "__main__":
         client_thread.start()
         logger.debug("Starting server thread with target serve...")
 
-        # logger.debug("Starting storage thread with target greet...")
+        # logger.debug("Starting storage thread with target storage...")
         # storage_thread.start()
 
         server_thread.start()

@@ -6,12 +6,15 @@ import os
 import sys
 import logging
 
+from page import Page
+from space_binary_tree import SpaceBinaryTree
+
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 
-from page import Page
-from space_binary_tree import SpaceBinaryTree
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 class MemoryManager:
     '''
@@ -33,8 +36,8 @@ class MemoryManager:
     # Constructor
     def __init__(self, total_memory_size, page_size):
 
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
+        # self.logger = logging.getLogger(__name__)
+        # logger.setLevel(logging.INFO)
         
         # define the attributes
         self.total_memory_size = total_memory_size
@@ -46,7 +49,7 @@ class MemoryManager:
             self.list_of_all_pages.append(Page(self.page_size))
 
         self.pages_free = SpaceBinaryTree(self.total_memory_size, self.total_number_of_pages)
-        self.logger.info("Number of pages available in memory %s of size %s bytes." % (len(self.list_of_all_pages),
+        logger.debug("Number of pages available in memory %s of size %s bytes." % (len(self.list_of_all_pages),
                                                                                            self.page_size))
 
     # def put_data(self, memory_id, data_chunks, num_of_chunks):
@@ -60,11 +63,11 @@ class MemoryManager:
         '''
 
         if hash_id in self.memory_tracker:
-            self.logger.info("The following hash_id exist and it will be overwritten: %s." % hash_id)
+            logger.debug("The following hash_id exist and it will be overwritten: %s." % hash_id)
             # delete data associated this this hash_id before we save the new one
             self.delete_data(hash_id)
         else:
-            self.logger.info("\nWriting new data with hash_id: %s." % hash_id)
+            logger.debug("Writing new data with hash_id: %s." % hash_id)
 
         pages_needed = number_of_chunks #self.get_number_of_pages_needed(chunk_size, number_of_chunks)
         # find available blocks of pages to save the data
@@ -89,9 +92,9 @@ class MemoryManager:
         self.list_of_pages_used.extend(target_list_indexes)
         # update memory dic
         self.memory_tracker[hash_id] = target_list_indexes
-        self.logger.info("Successfully saved the data in %s pages. Bytes written: %s. Took %s seconds." %
+        logger.debug("Successfully saved the data in %s pages. Bytes written: %s. Took %s seconds." %
               (pages_needed, pages_needed * self.page_size, total_time_write_data))
-        self.logger.info("Free pages left: %s. Bytes left: %s" % (self.get_number_of_pages_available(), self.get_available_memory_bytes()))
+        logger.debug("Free pages left: %s. Bytes left: %s" % (self.get_number_of_pages_available(), self.get_available_memory_bytes()))
         return True
 
     # def get_number_of_pages_needed(self, chunk_size, data_size):
@@ -124,7 +127,7 @@ class MemoryManager:
 
         total_time_read_data = round(time.time() - start_read_data, 6)
 
-        self.logger.info("Returning: data for %s composed of %s pages. Took %s sec" %
+        logger.debug("Returning: data for %s composed of %s pages. Took %s sec" %
               (hash_id, str(len(pages_to_return)), total_time_read_data))
 
         return pages_to_return
@@ -142,14 +145,14 @@ class MemoryManager:
     def find_n_available_pages(self, n):
         start = time.time()
 
-        self.logger.info("Looking for %s available pages... " % n)
+        logger.debug("Looking for %s available pages... " % n)
         list_indexes_to_used = self.pages_free.get_available_space(n)
         total_time = round(time.time() - start, 6)
 
         if len(list_indexes_to_used) != n:
             raise Exception("Not enough pages available to save the data. Took %s seconds." % total_time)
         else:
-            self.logger.info("Enough pages available to save the data. Took %s seconds." % total_time)
+            logger.debug("Enough pages available to save the data. Took %s seconds." % total_time)
 
         return list_indexes_to_used
 
@@ -164,7 +167,7 @@ class MemoryManager:
         self.list_of_pages_used = [x for x in self.list_of_pages_used if x not in old_pages_list]
 
         # we may also need to delete the data from the actual Pages() in list_of_all_pages
-        self.logger.info("Successfully deleted hash_id: %s." % hash_id)
+        logger.debug("Successfully deleted hash_id: %s." % hash_id)
 
     def get_stored_hashes_list(self):
         return list(self.memory_tracker.keys())
