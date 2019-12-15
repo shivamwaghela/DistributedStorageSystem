@@ -73,15 +73,21 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                 visited.append(item)
                 forward_list.append(item)
 
+        print("Forwarded List: {}".foramt(forward_list))
+        print("Neighbor List: {}".foramt(neighbor_list))
+        print("Visited List: {}".foramt(visited))
         threading_list = []
         for item in forward_list:
             forwarded_node_ip = item.node_ip #confirm
             channel = item.channel #confirm
+            print("Forwarded Node IP: {}".format(forwarded_node_ip))
+            print("Channel: {}".format(channel))
             forward_request_thread = threading.Thread(target=self.forward_receive_data_request, args=(forwarded_node_ip, channel, request))
             threading_list.append(forward_request_thread)
 
         for thread in threading_list:    
             thread.start()
+            thread.join()
 
         return traversal_pb2.ReceiveDataResponse(status=str(TraversalResponseStatus.FORWARDED)) # confirm indentation
 
