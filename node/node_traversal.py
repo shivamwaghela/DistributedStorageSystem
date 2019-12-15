@@ -60,7 +60,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         neighbor_list = []
 
         for item in globals.node_connections.connection_dict.items():
-            if item.channel.isAlive(): #confirm
+            if True: #item.channel.isAlive(): #confirm
                 print("Node IP: {}".format(item[1].node_ip))
                 print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
                     .format(request.hash_id, request.request_id, request.visited))
