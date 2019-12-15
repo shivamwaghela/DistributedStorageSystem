@@ -41,7 +41,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             curr_path = find_shortest_path(curr_mesh)
             forward_response_data(curr_data, request.request_id, request.node_ip, traversal_response_status.FOUND, curr_path)
             # RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
-            return traversal_pb2.ReceiveDataResponse(status = traversal_response_status.FOUND)
+            return traversal_pb2.ReceiveDataResponse(status = str(traversal_response_status.FOUND))
 
         # add neighbors to stack. before adding check if neighbor is already visited.
         visited = eval(request.visited)
@@ -68,7 +68,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
     def RespondData(self, request, context):
         t = threading.Thread(target=forward_response_data, args=(request.file_bytes, request.request_id, request.node_ip, request.status, request.path))
         t.start()
-        return traversal_pb2.ResponseDataResponse(status = traversal_response_status.FORWARDED)
+        return traversal_pb2.ResponseDataResponse(status = str(traversal_response_status.FORWARDED))
 
 
 
