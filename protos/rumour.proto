@@ -25,7 +25,7 @@ message HeartBeatRequest{
     string heartbeatdict = 5;
 }
 message HeartBeatReply{
-
+    string removednodes = 1;
 }
 message MyDataRequest {
     string victim_ip = 1;
