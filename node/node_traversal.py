@@ -73,11 +73,15 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                 visited.append(item)
                 forward_list.append(item)
 
+        threading_list = []
         for item in forward_list:
             forwarded_node_ip = item.node_ip #confirm
             channel = item.channel #confirm
             forward_request_thread = threading.Thread(target=self.forward_receive_data_request, args=(forwarded_node_ip, channel, request))
-            forward_request_thread.start()
+            threading_list.append(forward_request_thread)
+
+        for thread in threading_list:    
+            thread.start()
 
         return traversal_pb2.ReceiveDataResponse(status=str(TraversalResponseStatus.FORWARDED)) # confirm indentation
 
