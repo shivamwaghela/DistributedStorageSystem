@@ -37,9 +37,10 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         # Check if the file exits on current node
         if True:
             curr_data = fetch_data(request.hash_id)
-            curr_mesh = create_logical_mesh()
-            curr_path = find_shortest_path(curr_mesh)
-            forward_response_data(curr_data, request.request_id, request.node_ip, traversal_response_status.FOUND, curr_path)
+            curr_mesh = self.create_logical_mesh()
+            curr_path = self.find_shortest_path(curr_mesh)
+            self.forward_response_data(curr_data, request.request_id, request.node_ip, traversal_response_status.FOUND,
+                                       curr_path)
             # RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
             return traversal_pb2.ReceiveDataResponse(status = str(traversal_response_status.FOUND))
 
@@ -53,11 +54,11 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
 
         # add neighbors to stack
         for item in globals.node_connections.connection_dict.items():
-            if item[1].node_ip not in visited and item[1].channel.isAlive(): #check if node is not visited and channel is alive
+            if item[1].node_ip not in visited:  # check if node is not visited and channel is alive
                 visited.append(item[1].node_ip)
         
         for item in globals.node_connections.connection_dict.items():
-            if item[1].node_ip not in visited and item[1].channel.isAlive():
+            if item[1].node_ip not in visited:
                 forwarded_node_ip = item[1].node_ip
                 channel = item[1].channel
                 forward_request_thread = threading.Thread(target=forward_receive_data_request, args=(forwarded_node_ip, channel, request))
