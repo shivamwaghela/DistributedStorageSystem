@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
 import rumour_pb2
 import rumour_pb2_grpc
 import machine_info
-
+import hb_server
 
 class RumourServicer(rumour_pb2_grpc.RumourServicer):
     def sendMemoryData(self, request, context):
@@ -18,6 +18,9 @@ class RumourServicer(rumour_pb2_grpc.RumourServicer):
         return rumour_pb2.MemoryStatsReply(cpu_usage=machine_info.get_my_cpu_usage(),
                                            memory_usage=machine_info.get_my_memory_usage(),
                                            disk_usage=machine_info.get_my_disk_usage())
+
+    def sendLogicalMesh(self,request,context):
+        return rumour_pb2.LogicalMeshReply(wholemesh=str(hb_server.whole_mesh_dict))
 
 
 if __name__ == "__main__":

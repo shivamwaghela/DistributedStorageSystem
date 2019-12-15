@@ -9,6 +9,13 @@ service Rumour {
   rpc sendMemoryData (MemoryDataRequest) returns (MemoryStatsReply) {};
   rpc sendheartbeat (HeartBeatRequest) returns (HeartBeatReply) {};
   rpc receiveheartbeat (HeartBeatReply) returns (HeartBeatRequest) {};
+  rpc sendLogicalMesh (LogicalMeshRequest) returns (LogicalMeshReply) {};
+}
+message LogicalMeshRequest{
+  
+}
+message LogicalMeshReply{
+    string wholemesh = 1;
 }
 message HeartBeatRequest{
     string ip = 1;

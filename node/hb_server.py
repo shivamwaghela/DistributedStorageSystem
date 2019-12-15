@@ -51,7 +51,6 @@ class RumourServicer(rumour_pb2_grpc.RumourServicer):
 
         return rumour_pb2.HeartBeatReply()
 
-
 def hb_serve():
     logger.info(globals.my_ip)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

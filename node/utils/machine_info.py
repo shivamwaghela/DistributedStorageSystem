@@ -10,7 +10,7 @@ def get_my_ip():
         s.connect(('10.0.0.0', 1))
         IP = s.getsockname()[0]
     except:
-        IP = '127.0.0.1'
+        IP = '10.0.0.20'
     finally:
         s.close()
 
