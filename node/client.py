@@ -129,7 +129,7 @@ class Client:
                     .format(memory_storage_stub.get_node_available_memory_bytes(storage_pb2.EmptyRequest()).bytes))
 
         # prepare message to save in memory (this can be a file too)
-        message = "Hello my name is Gash".encode()
+        message = "Hello my name is John".encode()
         logger.info("Attempting to upload message: {}".format(message))
         message_id = "122333"
         # create sample hash
