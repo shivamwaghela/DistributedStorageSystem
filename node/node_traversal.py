@@ -34,8 +34,11 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         TraversalResponseStatus = traversal_response_status.TraversalResponseStatus
         logger.info("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
                     .format(request.hash_id, request.request_id, request.visited))
+        print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
+                    .format(request.hash_id, request.request_id, request.visited))
         # Check if the file exits on current node
-        if True:
+        if False:
+            
             curr_data = fetch_data(request.hash_id)
             curr_mesh = self.create_logical_mesh()
             curr_path = self.find_shortest_path(curr_mesh)
@@ -44,21 +47,21 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             # RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
             return traversal_pb2.ReceiveDataResponse(status = str(traversal_response_status.FOUND))
 
+        
         # add neighbors to stack. before adding check if neighbor is already visited.
         visited = eval(request.visited)
 
+        
         # forward the request
-        if globals.my_ip not in visited:
-            visited.append(globals.my_ip)
+        
+        visited.append(globals.my_ip)
         logger.info("Traversal.ReceiveData: visited: {}".format(visited))
-
-        # add neighbors to stack
-        for item in globals.node_connections.connection_dict.items():
-            if item[1].node_ip not in visited:  # check if node is not visited and channel is alive
-                visited.append(item[1].node_ip)
         
         for item in globals.node_connections.connection_dict.items():
             if item[1].node_ip not in visited:
+                print("Node IP: {}".format(item[1].node_ip))
+                print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
+                    .format(request.hash_id, request.request_id, request.visited))
                 forwarded_node_ip = item[1].node_ip
                 channel = item[1].channel
                 forward_request_thread = threading.Thread(target=forward_receive_data_request, args=(forwarded_node_ip, channel, request))
