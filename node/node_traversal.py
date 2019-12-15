@@ -63,10 +63,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                 forward_request_thread = threading.Thread(target=forward_receive_data_request, args=(forwarded_node_ip, channel, request))
                 forward_request_thread.start()
 
-        return traversal_pb2.ReceiveDataResponse(file_bytes=None,
-                                                 request_id=str(request.request_id),
-                                                 node_ip=str(forwarded_node_ip),
-                                                 status=str(TraversalResponseStatus.FORWARDED))
+        return traversal_pb2.ReceiveDataResponse(status=str(TraversalResponseStatus.FORWARDED))
 
     def RespondData(self, request, context):
         t = threading.Thread(target=forward_response_data, args=(request.file_bytes, request.request_id, request.node_ip, request.status, request.path))
