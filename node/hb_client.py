@@ -91,7 +91,10 @@ def hb_client():
 
         if response_removed_nodes:
             for key in response_removed_nodes:
-                if response_removed_nodes[key] == len(neighbour_dict):
+                print("response_rrrm..?C>w. ")
+                print(key)
+                print(response_removed_nodes[key])
+                if response_removed_nodes[key] == len(neighbour_dict)-1:
                     print("Failed node...." + key)
                     # update logical mesh
                     # inform middleware
