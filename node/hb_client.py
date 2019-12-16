@@ -33,13 +33,13 @@ def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
         rumour_stub = rumour_pb2_grpc.RumourStub(channel)
         mesh_dict = {}
         removed_node_dict = []
-        if action:
-            mesh_dict = whole_mesh_dict
+        # if action:
+        #     mesh_dict = whole_mesh_dict
 
         # if len(removed_nodes) != 0:
         #     removed_node_dict = removed_nodes
 
-        response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
+        response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(whole_mesh_dict),
                                                         heartbeatdict=str(heartbeat_meta_dict), removednodes=str(removed_node_dict)))
         
             #channel.close()
@@ -108,6 +108,7 @@ def hb_client():
     heartbeat_meta_dict = hb_server.heartbeat_meta_dict
     
     while True:
+        time.sleep(5) 
         local_mesh = {}
         for item in globals.node_connections.connection_dict.items():
             if item[1].node_coordinates not in whole_mesh_dict:
@@ -117,7 +118,6 @@ def hb_client():
                 neighbour_dict.append(item[1].node_ip)
 
         print(neighbour_dict)
-        time.sleep(5) 
         while gossip_queue:
             element = gossip_queue.popleft()
             whole_mesh_dict[element["pos"]] = element["ip"]
