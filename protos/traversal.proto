@@ -27,7 +27,7 @@ message ReceiveDataResponse {
 }
 
 message ResponseDataRequest {
-    string file_bytes = 1;
+    bytes file_bytes = 1;
     string request_id = 2;
     string node_ip = 3;
     string status = 4;

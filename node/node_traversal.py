@@ -59,7 +59,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                     .format(request.hash_id, request.request_id, request.visited))
         # print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
         #             .format(request.hash_id, request.request_id, request.visited))
-        data_found = True
+        data_found = False
         # Check if the file exits on current node
         if data_found:
             for item in gossip_dictionary:
@@ -88,8 +88,8 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             print(curr_mesh)
             curr_path = self.find_shortest_path(curr_mesh)
             # print(eval(curr_path))
-            self.forward_response_data("curr_data", request.request_id, "", traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND,
-                                        curr_path)
+            self.forward_response_data(str.encode("curr_data"), request.request_id, "", traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND,
+                                        str(curr_path))
         #    RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
             return traversal_pb2.ReceiveDataResponse(status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND)
 
@@ -176,12 +176,12 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         return response
 
     def forward_response_data(self, file_bytes, request_id, node_ip, status, path):
-        curr_path = path
+        curr_path = eval(path)
         curr_coordinates = curr_path.pop()
         
         #check if data reached the initial invoking node
-        if curr_path.empty():
-            return file_bytes
+        # if curr_path.empty():
+        #     return file_bytes
         
         #get the channel through which the data will be propogated
         for item in globals.node_connections.connection_dict.items():
@@ -199,12 +199,12 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         #forward the request
         traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
         response = traversal_stub.RespondData(
-            traversal_pb2.RespondDataRequest(
+            traversal_pb2.ResponseDataRequest(
                 file_bytes=file_bytes,
                 request_id=request_id,
                 node_ip=node_ip,
                 status=status,
-                path=curr_path
+                path=str(curr_path)
             ))
         logger.info("Current response is: response : {}".format(response))
         return response
