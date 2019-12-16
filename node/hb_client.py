@@ -21,6 +21,8 @@ suspended_nodes = []
 global removed_nodes
 removed_nodes = []
 response_removed_nodes = {}
+global myheartbeatcount
+myheartbeatcount = 1
 
 def sendMsg(server_ip, whole_mesh_dict, heartbeat_meta_dict):
     try:
@@ -55,19 +57,19 @@ def sendMsg(server_ip, whole_mesh_dict, heartbeat_meta_dict):
     #         response_removed_nodes[node] = 1
 
 def markNodes(heartbeat_meta_dict):
-    print("in mark nodes.....")
+    # print("in mark nodes.....")
     whole_mesh_dict = hb_server.whole_mesh_dict
-    heartbeat_meta_dict = hb_server.heartbeat_meta_dict
+    #heartbeat_meta_dict = hb_server.heartbeat_meta_dict
     rell = []
     removed_nodes = []
-
+    global myheartbeatcount
     for node in heartbeat_meta_dict:
-        if (node == globals.my_ip):
-            continue
+        # if (node == globals.my_ip):
+        #     continue
         # print("in hbbb,,,,,")
-        print(myheartbeatcount)
+        # print(myheartbeatcount)
         # print(".....")
-        print(heartbeat_meta_dict[node])
+        # print(heartbeat_meta_dict[node])
         # if (myheartbeatcount-heartbeat_meta_dict[node]) >= 3:
         #     suspended_nodes.append(node)
         
@@ -102,8 +104,7 @@ def markNodes(heartbeat_meta_dict):
 
 
 def hb_client():
-    global myheartbeatcount, response_removed_nodes
-    myheartbeatcount = 1
+    global response_removed_nodes, myheartbeatcount
     whole_mesh_dict = hb_server.whole_mesh_dict
     heartbeat_meta_dict = hb_server.heartbeat_meta_dict
     while True:
@@ -121,12 +122,12 @@ def hb_client():
             element = gossip_queue.popleft()
             whole_mesh_dict[element["pos"]] = element["ip"]
             # action = "add"
-        if globals.my_ip in heartbeat_meta_dict:
-            myheartbeatcount = heartbeat_meta_dict[globals.my_ip]+1
+        # if globals.my_ip in heartbeat_meta_dict:
+        #     myheartbeatcount = heartbeat_meta_dict[globals.my_ip]+1
         myheartbeatcount = myheartbeatcount + 1
         print("my ip" + globals.my_ip)
-        heartbeat_meta_dict[globals.my_ip] = myheartbeatcount
-        markNodes(heartbeat_meta_dict)
+        hb_server.heartbeat_meta_dict[globals.my_ip] = myheartbeatcount
+        markNodes(hb_server.heartbeat_meta_dict)
 
         for neighbour in neighbour_dict:
             sendMsg(neighbour,whole_mesh_dict,heartbeat_meta_dict)
