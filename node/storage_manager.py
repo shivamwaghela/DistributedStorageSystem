@@ -1,5 +1,9 @@
 import os
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
@@ -17,7 +21,7 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
 
     def upload_chunk_stream(self, request_iterator, context):
         if DEBUG:
-            print("[storage manager] upload_chunk_stream called")
+            logger.debug("[storage manager] upload_chunk_stream called")
 
         hash_id = ""
         chunk_size = 0
@@ -32,9 +36,9 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
                 number_of_chunks = int(value)
 
         if DEBUG:
-            print("[storage manager] hash_id: {}".format(hash_id))
-            print("[storage manager] chunk_size: {}".format(chunk_size))
-            print("[storage manager] number_of_chunks: {}".format(number_of_chunks))
+            logger.debug("[storage manager] hash_id: {}".format(hash_id))
+            logger.debug("[storage manager] chunk_size: {}".format(chunk_size))
+            logger.debug("[storage manager] number_of_chunks: {}".format(number_of_chunks))
 
         assert hash_id != ""
         assert chunk_size != 0
@@ -42,12 +46,12 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
 
 
         if DEBUG:
-            print("[storage manager] Assertions passed")
+            logger.debug("[storage manager] Assertions passed")
 
-        success = self.memory_manager.put_data(request_iterator, hash_id, number_of_chunks, False)
+        success = self.memory_manager.put_data(request_iterator, hash_id, chunk_size, number_of_chunks, False)
 
         if DEBUG:
-            print("[storage manager] called memory manager put data, response:  {}".format(success))
+            logger.debug("[storage manager] called memory manager put data, response:  {}".format(success))
 
         return storage_pb2.ResponseBoolean(success=success)
 
@@ -61,7 +65,7 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
         chunk_size = 0
 
         if DEBUG:
-            print("[storage manager] upload_single_chunk called")
+            logger.debug("[storage manager] upload_single_chunk called")
 
         for key, value in context.invocation_metadata():
             if key == "key-hash-id":
@@ -70,25 +74,25 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
                 chunk_size = int(value)
 
         if DEBUG:
-            print("[storage manager] hash_id: {}".format(hash_id))
-            print("[storage manager] chunk_size: {}".format(chunk_size))
+            logger.debug("[storage manager] hash_id: {}".format(hash_id))
+            logger.debug("[storage manager] chunk_size: {}".format(chunk_size))
 
         assert hash_id != ""
         assert chunk_size != 0
 
         if DEBUG:
-            print("[storage manager] Assertions passed")
+            logger.debug("[storage manager] Assertions passed")
 
-        success = self.memory_manager.put_data(request_chunk, hash_id, 1, True)
+        success = self.memory_manager.put_data(request_chunk, hash_id, chunk_size, 1, True)
 
         if DEBUG:
-            print("[storage manager] called memory manager put data, response:  {}".format(success))
+            logger.debug("[storage manager] called memory manager put data, response:  {}".format(success))
 
         return storage_pb2.ResponseBoolean(success=success)
 
     def download_chunk_stream(self, request, context):
         if DEBUG:
-            print("[storage manager] download chunk stream called")
+            logger.debug("[storage manager] download chunk stream called")
 
         chunks = self.memory_manager.get_data(request.hash_id)
 
@@ -103,7 +107,7 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
         """
 
         if DEBUG:
-            print("[storage manager] get node available memory bytes called")
+            logger.debug("[storage manager] get node available memory bytes called")
 
         bytes_ = self.memory_manager.get_available_memory_bytes()
         return storage_pb2.ResponseDouble(bytes=bytes_)
@@ -116,7 +120,7 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
         """
 
         if DEBUG:
-            print("[storage manager] get stored_hashes list iterator called")
+            logger.debug("[storage manager] get stored_hashes list iterator called")
 
         list_of_hashes = self.memory_manager.get_stored_hashes_list()
         for hash_ in list_of_hashes:
@@ -129,7 +133,7 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
         :return: boolean as storage_pb2.ResponseBoolean
         """
         if DEBUG:
-            print("[storage manager] is hash id in memory called")
+            logger.debug("[storage manager] is hash id in memory called")
 
         hash_exists = self.memory_manager.hash_id_exists(request.hash_id)
         return storage_pb2.ResponseBoolean(success=hash_exists)

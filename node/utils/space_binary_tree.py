@@ -2,6 +2,11 @@
 # -*- coding: utf-8
 from tree_node import TreeNode
 from sortedcontainers import SortedDict
+import logging
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 #tracking number of free pages globals
 DEBUG = 0
@@ -34,24 +39,24 @@ class SpaceBinaryTree:
 
     def set_empty_space(self, num_of_slots, free_pages):
         if DEBUG:
-            print("[space_binary_tree] Inside set empty_space")
-            print("[space_binary_tree] About to set the num_of_free_pages")
-            print("[space_binary_tree] number of slots to free: {}".format(num_of_slots))
-            print("[space_binary_tree] free pages: {}".format(self.free_pages))
+            logger.debug("[space_binary_tree] Inside set empty_space")
+            logger.debug("[space_binary_tree] About to set the num_of_free_pages")
+            logger.debug("[space_binary_tree] number of slots to free: {}".format(num_of_slots))
+            logger.debug("[space_binary_tree] free pages: {}".format(self.free_pages))
 
         self.set_num_free_pages(ADD, num_of_slots)
 
         if DEBUG:
-            print("[space_binary_tree] Already set the num_of_free_pages")
-            print("[space_binary_tree] number of slots to free: {}".format(num_of_slots))
-            print("[space_binary_tree] free pages: {}".format(self.free_pages))
+            logger.debug("[space_binary_tree] Already set the num_of_free_pages")
+            logger.debug("[space_binary_tree] number of slots to free: {}".format(num_of_slots))
+            logger.debug("[space_binary_tree] free pages: {}".format(self.free_pages))
 
 
         if self.sorted_dict.get(num_of_slots):
             if DEBUG:
-                print("[space_binary_tree] Number of slots exist in sorted_dict")
-                # print("[space_binary_tree] free pages given: {}".format(free_pages))
-                print("[space_binary_tree] sorted_dict: {}".format(self.sorted_dict.get(num_of_slots).size))
+                logger.debug("[space_binary_tree] Number of slots exist in sorted_dict")
+                # logger.debug("[space_binary_tree] free pages given: {}".format(free_pages))
+                logger.debug("[space_binary_tree] sorted_dict: {}".format(self.sorted_dict.get(num_of_slots).size))
                 self.sorted_dict.get(num_of_slots).print_free_pages()
 
             self.sorted_dict.get(num_of_slots).set_free_pages(free_pages)
@@ -60,10 +65,9 @@ class SpaceBinaryTree:
         # the list to a new node
         else:
             if DEBUG:
-                print("[space binary tree] New entry")
-                print("--------------------------------------------------")
-                print("[space binary tree] free pages given:")
-                print("--------------------------------------------------")
+                logger.debug("[space_binary_tree] New entry")
+                logger.debug("[space_binary_tree] free pages given:")
+
             self.sorted_dict[num_of_slots] = TreeNode(size=num_of_slots,
                                                       free_pages=[free_pages])
 

@@ -41,12 +41,10 @@ class MemoryManager:
     # Constructor
     def __init__(self, total_memory_size, page_size):
 
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.DEBUG)
-
         # define the attributes
         self.total_memory_size = total_memory_size
         self.page_size = page_size
+        self.memory_tracker = {}
 
         self.total_number_of_pages = math.floor(self.total_memory_size / self.page_size)
 
@@ -84,11 +82,15 @@ class MemoryManager:
         pages_needed = number_of_chunks * chunks_to_split_multiplier
 
         if DEBUG:
-            print("[memory manager] start time for getting pages")
+            logger.debug("[memory manager] start time for getting pages")
             start_find_pages_time = time.time()
 
         # find available blocks of pages to save the data
         target_list_indexes = self.find_n_available_pages(pages_needed)
+
+        # tracking the time it takes for the write operation
+        logger.debug("[memory manager] start time for writing data")
+        start_write_data = time.time()
 
         # save the data in pages
         index_counter = 0
@@ -107,45 +109,9 @@ class MemoryManager:
             self.list_of_all_pages[target_list_indexes[index_counter]].put_data(data_chunks.chunk)
             index_counter = index_counter + 1
 
-        if DEBUG:
-            for i, index in enumerate(target_list_indexes):
-                if isinstance(target_list_indexes[i], list):
-                    print("[memory manager] this should not be a list")
-                    print("[memory manager] first element is : {}".format(target_list_indexes[i][0]))
-                    break
 
-                print("[memory manager] target list of indexes : {}".format(target_list_indexes[index]))
-                if i >= PRINT_LIST_BREAK:
-                    break
-            total_find_pages_time = round(time.time() - start_find_pages_time, 6)
-            print("[memory manager] total time getting pages: {}".format(total_find_pages_time))
-
-
-        #tracking the time it takes for the write operation
-        if DEBUG:
-            print("[memory manager] start time for writing data")
-            start_write_data = time.time()
-
-        # save the data in pages
-        try:
-
-        # index_counter = 0
-            if not is_single_chunk:
-                temp_data = list(data_chunks)
-                temp = [self.save_stream_data(c, target_list_indexes[i]) for i, c in enumerate(temp_data)]
-            #     for c in data_chunks:
-            #         self.list_of_all_pages[target_list_indexes[index_counter]].put_data(c)
-            #         index_counter = index_counter + 1
-            else:
-                self.list_of_all_pages[target_list_indexes[0]].put_data(data_chunks)
-            #     self.list_of_all_pages[target_list_indexes[index_counter]].put_data(data_chunks)
-            #     index_counter = index_counter + 1
-        except:
-            raise
-
-        if DEBUG:
-            total_time_write_data = round(time.time() - start_write_data, 6)
-            print("[memory manager] total time writing data: {}".format(total_time_write_data))
+        total_time_write_data = round(time.time() - start_write_data, 6)
+        logger.debug("[memory manager] total time writing data: {}".format(total_time_write_data))
 
         #assert index_counter == pages_needed  # make sure we use all the pages we needed
 
@@ -219,18 +185,18 @@ class MemoryManager:
         '''
         # find the data from the memory storage
         if DEBUG:
-            print("[memory manager] Entering the delete data function")
+            logger.debug("[memory manager] Entering the delete data function")
         #get the list of pages used
         old_pages_list = self.memory_tracker.pop(hash_id)
         if DEBUG:
-            print("[memory manager] getting old pages list: {}".format(old_pages_list))
-            print("[memory manager] len of list to remove: {}".format(len(old_pages_list)))
+            logger.debug("[memory manager] getting old pages list: {}".format(old_pages_list))
+            logger.debug("[memory manager] len of list to remove: {}".format(len(old_pages_list)))
 
         #add pages to the free pages structure
         self.pages_free.set_empty_space(len(old_pages_list),old_pages_list)
 
         if DEBUG:
-            print("[memory manager] called set_empty_space | num_of slots: {}, free_pages: {}".format(len(old_pages_list),
+            logger.debug("[memory manager] called set_empty_space | num_of slots: {}, free_pages: {}".format(len(old_pages_list),
                                                                                                   old_pages_list))
         #delete the memory tracker
         # del self.memory_tracker[hash_id]  # delete the mapping
