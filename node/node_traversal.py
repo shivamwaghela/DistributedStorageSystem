@@ -11,12 +11,25 @@ import random
 import traversal_pb2
 import traversal_pb2_grpc
 import threading
+from queue import *
 
 from traversal_response_status import TraversalResponseStatus
 
 logger = logging.getLogger(__name__)
 gossip_dictionary = {"10.0.0.1": (0,0), "10.0.0.3": (0,2), "10.0.0.2": (0,1), "10.0.0.5": (1,2), "10.0.0.6": (1,0), "10.0.0.4": (1,1), "10.0.0.7": (2,1), "10.0.0.9": (2,0), "10.0.0.8": (2,2)}
 q = PriorityQueue()
+
+# up, left, right, down movements
+row = [-1, 0, 0, 1]
+col = [0, -1, 1, 0]
+
+# source coordinates (1,0)
+source_x = 0
+source_y = 1
+
+# destination coordinates (9,10)
+destination_x = 3
+destination_y = 5
 
 # XXX
 def find_data(hash_id):
@@ -27,6 +40,13 @@ def find_data(hash_id):
 def fetch_data(hash_id):
     return "data"
 
+# Nodes for shortest path
+class Node:
+    def __init__(self, x, y, w, parent):
+        self.x = x
+        self.y = y
+        self.dist = w
+        self.parent = parent
 
 # XXX
 class Traversal(traversal_pb2_grpc.TraversalServicer):
@@ -37,14 +57,14 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         #             .format(request.hash_id, request.request_id, request.visited))
         data_found = True
         # Check if the file exits on current node
-        #if data_found:
-        #    curr_data = fetch_data(request.hash_id)
-        #    curr_mesh = self.create_logical_mesh()
-        #    curr_path = self.find_shortest_path(curr_mesh)
-        #    self.forward_response_data(curr_data, request.request_id, request.node_ip, traversal_response_status.FOUND,
-        #                               curr_path)
-            # RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
-        #    return traversal_pb2.ReceiveDataResponse(status = str(traversal_response_status.FOUND))
+        if data_found:
+           curr_data = fetch_data(request.hash_id)
+           curr_mesh = self.create_logical_mesh()
+           curr_path = self.find_shortest_path(curr_mesh)
+           self.forward_response_data(curr_data, request.request_id, request.node_ip, traversal_response_status.FOUND,
+                                      curr_path)
+        #    RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
+           return traversal_pb2.ReceiveDataResponse(status = str(traversal_response_status.FOUND))
 
         # If file not found in node
         # add neighbors to stack. before adding check if neighbor is already visited.
@@ -133,10 +153,10 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         
         #check if channel is alive. if not, update the 2D matrix and calculate a new shortest path
         if not channel.isAlive():
-            mesh = create_logical_mesh()
+            mesh = self.create_logical_mesh()
             mesh[curr_coordinates[0]][curr_coordinates[1]] = 0
-            curr_path = find_shortest_path(mesh)
-            forward_response_data(file_bytes, request_id, node_ip, status, curr_path)
+            curr_path = self.find_shortest_path(mesh)
+            self.forward_response_data(file_bytes, request_id, node_ip, status, curr_path)
 
         #forward the request
         traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
@@ -181,5 +201,90 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         return mesh
 
     def find_shortest_path(self, mesh):
-        path = ""
+        path = []
+        # M is total number of rows in matrix, N is total number of columns in matrix
+        M = len(mesh)
+        N = len(mesh[0])
+        node = self.shortestDistance(mesh)
+
+        if node != None:
+            print("The shortest safe path has length of ", node.dist, "\nCoordinates of the path are :\n")
+            path = self.printPath(node)
+        else:
+            print("No route is safe to reach destination")
         return path
+
+    def isSafe(self, field, visited, x, y):
+        return field[x][y] == 1 and not visited[x][y]
+
+    def isValid(self, x, y, mesh):
+        M = len(mesh)
+        N = len(mesh[0])
+        return x < M and y < N and x >= 0 and y >= 0
+
+    def BFS(self, mesh):
+        # created a visited list of Dimensions M*N that stores if a cell is visited or not
+        visited = []
+        M = len(mesh)
+        N = len(mesh[0])
+        m = 0
+        while m < M:
+            visited_row = [False] * N
+            visited.append(visited_row)
+            m += 1
+
+        # create an empty queue
+        q = Queue()
+        # put source coodinates in the queue
+
+        q.put(Node(source_x, source_y, 0, None))
+        # run till queue is not empty
+        while q.qsize() > 0:
+            node = q.get()
+            # pop front node from queue and process it
+            i = node.x
+            j = node.y
+            dist = node.dist
+            # if destination is found, return minimum distance
+            if i == destination_x and j == destination_y:
+                return node
+            # check for all 4 possible movements from current cell and enqueue each valid movement
+            k = 0
+            while k < 4:
+                # Skip if location is invalid or visited or unsafe
+                # print("in BFS" , i + row[k], j + col[k])
+                if self.isValid(i + row[k], j + col[k], mesh) and self.isSafe(mesh, visited, i + row[k], j + col[k]):
+                    # mark it visited & push it into queue with +1 distance
+                    visited[i + row[k]][j + col[k]] = True
+                    q.put(Node(i + row[k], j + col[k], dist + 1, node))
+                k += 1
+        return None
+
+
+    # Find Shortest Path from first column to last column in given field
+    def shortestDistance(self, mesh):
+        # update the mesh
+        i = 0
+        M = len(mesh)
+        N = len(mesh[0])
+        while i < M:
+            j = 0
+            while j < N:
+                if mesh[i][j] == float('inf'):
+                    mesh[i][j] = 0
+                j += 1
+            i += 1
+
+        # call BFS and return shortest distance found by it
+        return self.BFS(mesh)
+
+
+    def printPath(self, node):
+        if not node:
+            return
+        self.printPath(node.parent)
+        co_ords = (node.x, node.y)
+        path = []
+        path.append(co_ords)
+        return path
+    # print("{", node.x, node.y, "}")
