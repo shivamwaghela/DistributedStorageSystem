@@ -8,7 +8,7 @@ class NodeConnections:
     MAX_CONNECTIONS = 4
 
     def __init__(self):
-        self.__connection_dict = {}
+        self.connection_dict = {}
 
     def is_full(self):
         """
@@ -16,7 +16,7 @@ class NodeConnections:
         :return: True if length of connection_list equals MAX_CONNECTIONS
                 else False
         """
-        if len(self.__connection_dict) < self.MAX_CONNECTIONS:
+        if len(self.connection_dict) < self.MAX_CONNECTIONS:
             return False
         else:
             return True
@@ -27,15 +27,15 @@ class NodeConnections:
         :param connection: Connection object
         :return: Returns True if connection was added successfully, False otherwise
         """
-        if connection.node_position in self.__connection_dict:
+        if connection.node_position in self.connection_dict:
             return False
 
-        for item in self.__connection_dict.items():
+        for item in self.connection_dict.items():
             if item[1].node_ip == connection.node_ip:
                 return False
 
         with globals.lock:
-            self.__connection_dict[connection.node_position] = connection
+            self.connection_dict[connection.node_position] = connection
 
         return True
 
@@ -45,9 +45,9 @@ class NodeConnections:
         :param node_position: Connection position (Left/Right/Top/Bottom)
         :return: Returns True if connection was removed successfully, False otherwise
         """
-        if node_position in self.__connection_dict:
+        if node_position in self.connection_dict:
             with globals.lock:
-                del self.__connection_dict[node_position]
+                del self.connection_dict[node_position]
             return True
 
         return False
