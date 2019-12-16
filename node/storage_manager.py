@@ -1,5 +1,9 @@
 import os
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
@@ -7,6 +11,8 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 
 import storage_pb2, storage_pb2_grpc
 from memory_manager import MemoryManager
+
+DEBUG = 0
 
 class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
 
