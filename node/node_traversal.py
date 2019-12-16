@@ -38,56 +38,55 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                     .format(request.hash_id, request.request_id, request.visited))
         data_found = True
         # Check if the file exits on current node
-        if data_found:
-            curr_data = fetch_data(request.hash_id)
-            curr_mesh = self.create_logical_mesh()
-            curr_path = self.find_shortest_path(curr_mesh)
-            self.forward_response_data(curr_data, request.request_id, request.node_ip, traversal_response_status.FOUND,
-                                       curr_path)
+        #if data_found:
+        #    curr_data = fetch_data(request.hash_id)
+        #    curr_mesh = self.create_logical_mesh()
+        #    curr_path = self.find_shortest_path(curr_mesh)
+        #    self.forward_response_data(curr_data, request.request_id, request.node_ip, traversal_response_status.FOUND,
+        #                               curr_path)
             # RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
-            return traversal_pb2.ReceiveDataResponse(status = str(traversal_response_status.FOUND))
+        #    return traversal_pb2.ReceiveDataResponse(status = str(traversal_response_status.FOUND))
 
         # If file not found in node
         # add neighbors to stack. before adding check if neighbor is already visited.
-        visited = eval(request.visited)
+        visited_ip = eval(request.visited)
         
-        if globals.my_ip not in visited:
-            visited.append(globals.my_ip)
+        if globals.my_ip not in visited_ip:
+            visited_ip.append(globals.my_ip)
 
-        logger.info("Traversal.ReceiveData: visited: {}".format(visited))
-        print(visited)
+        logger.info("Traversal.ReceiveData: visited: {}".format(visited_ip))
+        print(visited_ip)
 
-        neighbor_list = []
+        neighbor_conn_list = []
 
         for item in globals.node_connections.connection_dict.items():
-            if True: #item.channel.isAlive(): #confirm
-                print("Node IP: {}".format(item[1].node_ip))
-                print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
+            print("Node IP: {}".format(item[1].node_ip))
+            print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
                     .format(request.hash_id, request.request_id, request.visited))
-                neighbor_list.append(item[1])
+            neighbor_conn_list.append(item[1])
 
-        forward_list = []
+        forward_conn_list = []
 
-        for item in neighbor_list:
-            if item.node_ip not in visited:
-                visited.append(item.node_ip)
-                forward_list.append(item)
+        for neighbor_conn in neighbor_conn_list:
+            if neighbor_conn.node_ip not in visited_ip:
+                visited_ip.append(neighbor_conn.node_ip)
+                forward_conn_list.append(neighbor_conn)
 
-        print("Forwarded List: {}".format(forward_list))
-        print("Neighbor List: {}".format(neighbor_list))
-        print("Visited List: {}".format(visited))
+        print("Forwarded List: {}".format(forward_conn_list))
+        print("Neighbor List: {}".format(neighbor_conn_list))
+        print("Visited List: {}".format(visited_ip))
         threading_list = []
-        for item in forward_list:
-            forwarded_node_ip = item.node_ip #confirm
-            channel = item.channel #confirm
-            print("Forwarded Node IP: {}".format(forwarded_node_ip))
+        for forward_conn in forward_conn_list:
+            forward_node_ip = forward_conn.node_ip #confirm
+            channel = forward_conn.channel #confirm
+            print("Forwarded Node IP: {}".format(forward_node_ip))
             print("Channel: {}".format(channel))
-            forward_request_thread = threading.Thread(target=self.forward_receive_data_request, args=(forwarded_node_ip, channel, request))
+            forward_request_thread = threading.Thread(target=self.forward_receive_data_request, args=(forward_node_ip, channel, request))
             threading_list.append(forward_request_thread)
 
         for thread in threading_list:    
             thread.start()
-            thread.join()
+            #thread.join()
 
         return traversal_pb2.ReceiveDataResponse(status=str(TraversalResponseStatus.FORWARDED)) # confirm indentation
 
