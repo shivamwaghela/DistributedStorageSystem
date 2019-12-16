@@ -21,7 +21,7 @@ node_connections = None
 whole_mesh_dict = None
 lock = None
 storage_object = None
-
+nodes_for_replication = None
 
 def init():
     """

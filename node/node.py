@@ -20,7 +20,8 @@ import traversal_pb2
 import traversal_pb2_grpc
 import time
 import storage_pb2_grpc
-
+import replication_pb2_grpc
+from replication_service import ReplicationService
 from client import Client
 from server import Greeter
 from network_manager import NetworkManager
@@ -37,6 +38,7 @@ def serve():
     storage_pb2_grpc.add_FileServerServicer_to_server(globals.storage_object, server)
     server.add_insecure_port("[::]:" + str(globals.port))
     logger.info("Server starting at port " + str(globals.port))
+    replication_pb2_grpc.add_FileserviceServicer_to_server(ReplicationService(), server)
     server.start()
     server.wait_for_termination()
 

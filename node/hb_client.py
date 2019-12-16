@@ -48,7 +48,7 @@ def hb_client():
             if item[1].node_coordinates not in whole_mesh_dict:
                 gossip_queue.append({"ip":item[1].node_ip,"pos":item[1].node_coordinates})
             if item[1].node_ip != globals.my_ip and item[1].node_ip not in neighbour_dict:
-                neighbour_dict.append(item[1].node_ip)
+                neighbour_dict[item[1].node_coordinates]= item[1].node_ip
         print(neighbour_dict)
         time.sleep(5) 
         while gossip_queue:
