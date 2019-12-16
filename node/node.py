@@ -89,7 +89,8 @@ if __name__ == "__main__":
 
         client_thread = threading.Thread(target=Client.greet, args=(sys.argv[1],))
         server_thread = threading.Thread(target=serve)
-        #storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],)) # for test only
+        # for testing storage client only
+        #storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],))
         # XXX
         #traversal_thread = threading.Thread(target=ReceiveRequest, args=(request))
 
