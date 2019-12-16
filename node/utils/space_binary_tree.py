@@ -3,12 +3,16 @@
 from tree_node import TreeNode
 from sortedcontainers import SortedDict
 
+#tracking number of free pages globals
+ADD = "add"
+REMOVE = "remove"
+
+
 class SpaceBinaryTree:
     '''
     Atrributes
     '''
-
-    head = None
+    free_pages = 0
     sorted_dict = None
 
     '''
@@ -17,27 +21,40 @@ class SpaceBinaryTree:
 
     # Constructor
     def __init__(self, size, free_pages):
+        #keep track of the number of pages free
+        self.free_pages = size
         # define the attributes
+        #creating the list of indexes to keep track.
         free_pages = [x for x in range(free_pages)]
-        self.head = TreeNode(node_left=None, node_right=None, size=size, free_pages=free_pages)
-        self.sorted_dict = SortedDict({size: TreeNode(node_left=None,
-                                                      node_right=None,
-                                                      size=size,
+        # self.head = TreeNode(node_left=None, node_right=None, size=size, free_pages=free_pages)
+        self.sorted_dict = SortedDict({size: TreeNode(size=size,
                                                       free_pages=[[free_pages]])})
 
     def set_empty_space(self, num_of_slots, free_pages):
+        self.set_num_free_pages(ADD, num_of_slots)
         if self.sorted_dict.get(num_of_slots):
             self.sorted_dict.get(num_of_slots).set_free_pages(free_pages)
         # If the key does not exist, then we create a new node and add
         # the list to a new node
         else:
             self.sorted_dict[num_of_slots] = TreeNode(node_left=None,
-                                                       node_right=None,
-                                                       size=num_of_slots,
-                                                       free_pages=[[free_pages]])
+                                                      node_right=None,
+                                                      size=num_of_slots,
+                                                      free_pages=[[free_pages]])
 
     # else:
     # print("Index Error, the node has no list remaining")
+
+    def set_num_free_pages(self, mode, value):
+        if mode == ADD:
+            self.free_pages += value
+        elif mode == REMOVE:
+            self.free_pages -= value
+        else:
+            raise
+
+    def get_total_free_pages(self):
+        return self.free_pages
 
 
 
@@ -87,6 +104,8 @@ class SpaceBinaryTree:
                         # Once we have the new list, we need to split it into the pages
                         # needed nad the remaining ones.
                         ret_list = temp_list[:number_of_chunks]
+                        #keep track of the total number of pages available
+                        self.set_num_free_pages(REMOVE, number_of_chunks)
                         #print("Return list found = {}".format(len(ret_list)))
                         # Then we store the remaining list in an existing key
                         rem_list = temp_list[number_of_chunks:]
@@ -129,6 +148,7 @@ class SpaceBinaryTree:
 
                                 if enough_pages == True:
                                     self.sorted_dict.pop[0]
+                                    self.set_num_free_pages(REMOVE,number_of_chunks)
                                     return ret_list
                                 else:
                                     self.sorted_dict.pop(0)

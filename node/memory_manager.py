@@ -13,12 +13,16 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 from page import Page
 from space_binary_tree import SpaceBinaryTree
 
+DEBUG = 1
+ADD = "add"
+REMOVE = "remove"
+
 class MemoryManager:
     '''
     Atrributes
     '''
 
-    memory_tracker = {}  # key: memory_hash_id, value: list_of_pages_ids>
+    memory_tracker = None  # key: memory_hash_id, value: list_of_pages_ids>
     list_of_all_pages = []
     total_number_of_pages = 0
     total_memory_size = 0
@@ -35,7 +39,8 @@ class MemoryManager:
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
-        
+        self.memory_tracker={}
+
         # define the attributes
         self.total_memory_size = total_memory_size
         self.page_size = page_size
@@ -48,6 +53,10 @@ class MemoryManager:
         self.pages_free = SpaceBinaryTree(self.total_memory_size, self.total_number_of_pages)
         self.logger.info("Number of pages available in memory %s of size %s bytes." % (len(self.list_of_all_pages),
                                                                                            self.page_size))
+
+    def save_stream_data(self, data, index):
+        self.list_of_all_pages[index].put_data(data)
+        return
 
     # def put_data(self, memory_id, data_chunks, num_of_chunks):
     def put_data(self, data_chunks, hash_id, number_of_chunks, is_single_chunk):
@@ -67,26 +76,46 @@ class MemoryManager:
             self.logger.info("\nWriting new data with hash_id: %s." % hash_id)
 
         pages_needed = number_of_chunks #self.get_number_of_pages_needed(chunk_size, number_of_chunks)
+        if DEBUG:
+            print("[memory manager] start time for getting pages")
+            start_find_pages_time = time.time()
         # find available blocks of pages to save the data
         target_list_indexes = self.find_n_available_pages(pages_needed)
-        start_write_data = time.time()
+
+        if DEBUG:
+            total_find_pages_time = round(time.time() - start_find_pages_time, 6)
+            print("[memory manager] total time getting pages: {}".format(total_find_pages_time))
+
+        #tracking the time it takes for the write operation
+        if DEBUG:
+            print("[memory manager] start time for writing data")
+            start_write_data = time.time()
 
         # save the data in pages
-        index_counter = 0
-        if not is_single_chunk:
-            for c in data_chunks:
-                self.list_of_all_pages[target_list_indexes[index_counter]].put_data(c)
-                index_counter = index_counter + 1
-        else:
-            self.list_of_all_pages[target_list_indexes[index_counter]].put_data(data_chunks)
-            index_counter = index_counter + 1
+        try:
 
-        total_time_write_data = round(time.time() - start_write_data, 6)
+        # index_counter = 0
+            if not is_single_chunk:
+                temp_data = list(data_chunks)
+                temp = [self.save_stream_data(c, target_list_indexes[i]) for i, c in enumerate(temp_data)]
+            #     for c in data_chunks:
+            #         self.list_of_all_pages[target_list_indexes[index_counter]].put_data(c)
+            #         index_counter = index_counter + 1
+            else:
+                self.list_of_all_pages[target_list_indexes[0]].put_data(data_chunks)
+            #     self.list_of_all_pages[target_list_indexes[index_counter]].put_data(data_chunks)
+            #     index_counter = index_counter + 1
+        except:
+            raise
 
-        assert index_counter == pages_needed  # make sure we use all the pages we needed
+        if DEBUG:
+            total_time_write_data = round(time.time() - start_write_data, 6)
+            print("[memory manager] total time writing data: {}".format(total_time_write_data))
+
+        #assert index_counter == pages_needed  # make sure we use all the pages we needed
 
         # update the list with used pages
-        self.list_of_pages_used.extend(target_list_indexes)
+        # self.list_of_pages_used.extend.(target_list_indexes)
         # update memory dic
         self.memory_tracker[hash_id] = target_list_indexes
         self.logger.info("Successfully saved the data in %s pages. Bytes written: %s. Took %s seconds." %
@@ -140,9 +169,10 @@ class MemoryManager:
 
     # this function is very slow, we need to improve it. (This will use a tree)
     def find_n_available_pages(self, n):
-        start = time.time()
+
 
         self.logger.info("Looking for %s available pages... " % n)
+        start = time.time()
         list_indexes_to_used = self.pages_free.get_available_space(n)
         total_time = round(time.time() - start, 6)
 
@@ -158,11 +188,15 @@ class MemoryManager:
         :param hash_id:
         :return:
         '''
+        # find the data from the memory storage
 
+        #get the list of pages used
         old_pages_list = self.memory_tracker[hash_id]
+        #add pages to the free pages structure
+        self.pages_free.set_empty_space(num_of_slots=len(old_pages_list), free_pages=old_pages_list)
+        #delete the memory tracker
         del self.memory_tracker[hash_id]  # delete the mapping
-        self.list_of_pages_used = [x for x in self.list_of_pages_used if x not in old_pages_list]
-
+        # self.list_of_pages_used = [x for x in self.list_of_pages_used if x not in old_pages_list]
         # we may also need to delete the data from the actual Pages() in list_of_all_pages
         self.logger.info("Successfully deleted hash_id: %s." % hash_id)
 
