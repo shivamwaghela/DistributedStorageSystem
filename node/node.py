@@ -44,7 +44,7 @@ def serve():
 # XXX
 def send_request():
 #    time.sleep(60)
-    server_node_ip = "10.0.0.3"
+    server_node_ip = "10.0.0.1"
     logger.info("Connecting to {} at port {}...".format(server_node_ip, globals.port))
     channel = grpc.insecure_channel(server_node_ip + ":" + str(globals.port))
     traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
@@ -93,8 +93,8 @@ if __name__ == "__main__":
         # for testing storage client only
         #storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],))
         # XXX
-        traversal_thread = threading.Thread(target=send_request)
-        traversal_thread.start()
+        # traversal_thread = threading.Thread(target=send_request)
+        # traversal_thread.start()
 
         logger.debug("Starting client thread with target greet...")
         client_thread.start()

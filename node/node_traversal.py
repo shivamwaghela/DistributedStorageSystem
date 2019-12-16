@@ -33,8 +33,8 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
     def ReceiveData(self, request, context):
         logger.info("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
                     .format(request.hash_id, request.request_id, request.visited))
-        print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
-                    .format(request.hash_id, request.request_id, request.visited))
+        # print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
+        #             .format(request.hash_id, request.request_id, request.visited))
         data_found = True
         # Check if the file exits on current node
         #if data_found:
@@ -54,14 +54,14 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             visited_ip.append(globals.my_ip)
 
         logger.info("Traversal.ReceiveData: visited: {}".format(visited_ip))
-        print(visited_ip)
+        #print(visited_ip)
 
         neighbor_conn_list = []
 
         for item in globals.node_connections.connection_dict.items():
-            print("Node IP: {}".format(item[1].node_ip))
-            print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
-                    .format(request.hash_id, request.request_id, request.visited))
+        #   print("Node IP: {}".format(item[1].node_ip))
+        #    print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
+        #            .format(request.hash_id, request.request_id, request.visited))
             neighbor_conn_list.append(item[1])
 
         forward_conn_list = []
@@ -71,15 +71,20 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                 visited_ip.append(neighbor_conn.node_ip)
                 forward_conn_list.append(neighbor_conn)
 
-        print("Forwarded List: {}".format(forward_conn_list))
-        print("Neighbor List: {}".format(neighbor_conn_list))
+        print("Forwarded List: {}".format(self.forward_conn_list.node_ip for node_ip in forward_conn_list))
+        print("Neighbor List: {}".format(self.neighbor_conn_list.node_ip for node_ip in neighbor_conn_list))
         print("Visited List: {}".format(visited_ip))
+
+        logger.info("Forwarded List: {}".format(self.forward_conn_list.node_ip for node_ip in forward_conn_list))
+        logger.info("Neighbor List: {}".format(self.neighbor_conn_list.node_ip for node_ip in neighbor_conn_list))
+        logger.info("Visited List: {}".format(visited_ip))
+
         threading_list = []
         for forward_conn in forward_conn_list:
             forward_node_ip = forward_conn.node_ip #confirm
             channel = forward_conn.channel #confirm
-            print("Forwarded Node IP: {}".format(forward_node_ip))
-            print("Channel: {}".format(channel))
+            logger.debug("Forwarded Node IP: {}".format(forward_node_ip))
+        #    print("Channel: {}".format(channel))
             forward_request_thread = threading.Thread(target=self.forward_receive_data_request, args=(forward_node_ip, channel, request))
             threading_list.append(forward_request_thread)
 
