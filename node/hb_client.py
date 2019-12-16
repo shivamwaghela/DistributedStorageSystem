@@ -32,12 +32,18 @@ def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
         print(e)
 
 def markNodes(heartbeat_meta_dict):
+    ll_nodes = []
     for node in heartbeat_meta_dict:
-        if (myheartbeatcount-heartbeat_meta_dict[node]) >= 3:
-            suspended_nodes.append(node)
-        elif (myheartbeatcount-heartbeat_meta_dict[node]) >= 5:
-            removed_nodes.append(node)
-            #whole_mesh_dict.remove(node.split('-')[0])
+        # if (myheartbeatcount-heartbeat_meta_dict[node]) >= 3:
+        #     suspended_nodes.append(node)
+        if (myheartbeatcount-heartbeat_meta_dict[node]) >= 5:
+            #removed_nodes.append(node)
+            for i in whole_mesh_dict:
+                if whole_mesh_dict[i] == node:
+                    ll_nodes.append(i)
+    
+    for i in ll_nodes:
+        del whole_mesh_dict[i]
 
 
 def hb_client():
