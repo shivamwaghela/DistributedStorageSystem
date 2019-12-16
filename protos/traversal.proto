@@ -23,6 +23,7 @@ message ReceiveDataResponse {
         NOT_FOUND = 2;
     }
     TraversalResponseStatus status = 1;
+    bytes file_bytes = 2;
 }
 
 message ResponseDataRequest {

@@ -131,7 +131,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         logger.debug("Response: {}".format(globals.data_received))
         logger.debug("Return")
         return traversal_pb2.ReceiveDataResponse(
-             status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND)
+             status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND, file_bytes=globals.data_received)
 
     def RespondData(self, request, context):
         t = threading.Thread(target=self.forward_response_data, args=(request.file_bytes, request.request_id, request.node_ip, request.status, request.path))
@@ -310,10 +310,10 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
 
     def SendData(self, request, context):
         logger.info("SendData invoked from {}".format(request.client_node_ip))
-        logger.debug("filebytes {}, request_id {}, client_node_ip {}".format(request.filebytes, request.request_id,
+        logger.debug("filebytes {}, request_id {}, client_node_ip {}".format(request.file_bytes, request.request_id,
                                                                              request.client_node_ip))
 
-        globals.data_received = request.filebytes
+        globals.data_received = request.file_bytes
 
         globals.data_received_event.set()
 
