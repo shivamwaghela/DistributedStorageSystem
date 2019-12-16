@@ -54,8 +54,9 @@ def send_request():
                                         hash_id="hashid",
                                         request_id="1",
                                         stack=str([]),
-                                        visited=str([])))
-    logger.info("forward_receive_data_request: response: {}".format(response))
+                                        visited=str([]),
+                                        requesting_node_ip='10.0.0.1'))
+    logger.info("forward_receive_data_request: response: {} {}".format(response.status, response.file_bytes))
 
 
 if __name__ == "__main__":
@@ -78,8 +79,8 @@ if __name__ == "__main__":
         logger.debug("Starting server thread...")
         server_thread = threading.Thread(target=serve)
         server_thread.start()
-        # traversal_thread = threading.Thread(target=send_request)
-        # traversal_thread.start()
+        #traversal_thread = threading.Thread(target=send_request)
+        #traversal_thread.start()
         # pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
         # pulse_thread.start()
         server_thread.join()

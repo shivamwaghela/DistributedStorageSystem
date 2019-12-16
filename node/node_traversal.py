@@ -19,7 +19,7 @@ from traversal_response_status import TraversalResponseStatus
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-gossip_dictionary = {(10,10): "10.0.0.1", (10,11): "10.0.0.10", (11,11): "10.0.0.31", "10.0.0.32": (11,10), "10.0.0.4": (11,9)}
+gossip_dictionary = {(10,10): "10.0.0.1", (10,11): "10.0.0.10", (11,11): "10.0.0.31", (11,10): "10.0.0.32", (11,9): "10.0.0.4"}
 q = PriorityQueue()
 
 # up, left, right, down movements
@@ -61,18 +61,31 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         data_found = False
         # Check if the file exits on current node
         if data_found:
-            channel = grpc.insecure_channel(request.requesting_node_ip + ":" + str(globals.port))
-            traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
-            traversal_stub.SendData(traversal_pb2.SendDataRequest(
-                file_bytes=str.encode("mydata"), request_id=request.request_id, client_node_ip=globals.my_ip))
+            for item in gossip_dictionary:
+                if gossip_dictionary[item] == request.requesting_node_ip:
+                    destination_x = item[0]
+                    destination_y = item[1]
+                    break
+            source_x = globals.my_coordinates[0]
+            source_y = globals.my_coordinates[1]
 
-            #    curr_data = fetch_data(request.hash_id)
-            #    curr_mesh = self.create_logical_mesh()
-            #    curr_path = self.find_shortest_path(curr_mesh)
-            #    self.forward_response_data(curr_data, request.request_id, "", traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND,
-            #                               curr_path)
-            # #    RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
-            #    return traversal_pb2.ReceiveDataResponse(status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND)
+            print("Source x: {}".format(source_x))
+            print("Source y: {}".format(source_y))
+            print("Destination x: {}".format(destination_x))
+            print("Destination y: {}".format(destination_y))
+            # channel = grpc.insecure_channel(request.requesting_node_ip + ":" + str(globals.port))
+            # traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
+            # traversal_stub.SendData(traversal_pb2.SendDataRequest(
+            #     file_bytes=str.encode("mydata"), request_id=request.request_id, client_node_ip=globals.my_ip))
+            
+            curr_data = fetch_data(request.hash_id)
+            curr_mesh = self.create_logical_mesh()
+            print(curr_mesh)
+            curr_path = self.find_shortest_path(curr_mesh)
+            self.forward_response_data(curr_data, request.request_id, "", traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND,
+                                        curr_path)
+        #    RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
+            return traversal_pb2.ReceiveDataResponse(status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND)
 
         # If file not found in node
         visited_ip = eval(request.visited)
