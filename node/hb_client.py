@@ -30,22 +30,23 @@ def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
     if action:
         mesh_dict = whole_mesh_dict
 
-    if len(removed_nodes) != 0:
-        removed_node_dict = removed_nodes
+    # if len(removed_nodes) != 0:
+    #     removed_node_dict = removed_nodes
 
     response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
                                                     heartbeatdict=str(heartbeat_meta_dict), removednodes=str(removed_node_dict)))
-    ngbrremovednodes = eval(response.removednodes)
-    print("nggg...")
-    print(ngbrremovednodes)
-    for node in ngbrremovednodes:
-        if node in response_removed_nodes:
-            response_removed_nodes[node] += 1
-        else:
-            response_removed_nodes[node] = 1
+    # ngbrremovednodes = eval(response.removednodes)
+    # print("nggg...")
+    # print(ngbrremovednodes)
+    # for node in ngbrremovednodes:
+    #     if node in response_removed_nodes:
+    #         response_removed_nodes[node] += 1
+    #     else:
+    #         response_removed_nodes[node] = 1
 
 def markNodes(heartbeat_meta_dict):
     print("in mark nodes.....")
+    rell = []
     for node in heartbeat_meta_dict:
         print("in hbbb,,,,,")
         print(myheartbeatcount)
@@ -55,7 +56,17 @@ def markNodes(heartbeat_meta_dict):
         #     suspended_nodes.append(node)
         
         if (myheartbeatcount-heartbeat_meta_dict[node]) >= 3:
-            removed_nodes.append(node)
+            #removed_nodes.append(node)
+            for i in whole_mesh_dict:
+                if whole_mesh_dict[i] == node:
+                    print("rremoving key......")
+                    print(i)
+                    rell.append(i)
+
+            for i in rell:
+                print("delerting.........")
+                print(i)
+                del hb_server.whole_mesh_dict[i]
 
     print("....mk...")
     print(removed_nodes)
@@ -90,34 +101,34 @@ def hb_client():
         for neighbour in neighbour_dict:
             sendMsg(neighbour, action,whole_mesh_dict,heartbeat_meta_dict)
 
-        if response_removed_nodes:
-            for key in response_removed_nodes:
-                print("response_rrrm..?C>w. ")
-                print(key)
-                print(response_removed_nodes[key])
-                rell = []
-                if response_removed_nodes[key] == len(neighbour_dict)-1:
-                    print("Failed node...." + key)
-                    for i in whole_mesh_dict:
-                        if whole_mesh_dict[i] == key:
-                            print("rremoving key......")
-                            print(i)
-                            rell.append(i)
-                            print(whole_mesh_dict[i])
+        # if response_removed_nodes:
+        #     for key in response_removed_nodes:
+        #         print("response_rrrm..?C>w. ")
+        #         print(key)
+        #         print(response_removed_nodes[key])
+        #         rell = []
+        #         if response_removed_nodes[key] == len(neighbour_dict)-1:
+        #             print("Failed node...." + key)
+        #             for i in whole_mesh_dict:
+        #                 if whole_mesh_dict[i] == key:
+        #                     print("rremoving key......")
+        #                     print(i)
+        #                     rell.append(i)
+        #                     print(whole_mesh_dict[i])
 
-                    for i in rell:
-                        print("delerting.........")
-                        print(i)
-                        del hb_server.whole_mesh_dict[i]
+        #             for i in rell:
+        #                 print("delerting.........")
+        #                 print(i)
+        #                 del hb_server.whole_mesh_dict[i]
 
-                    rell = []
-                    # update logical mesh
-                    # inform middleware
-                    # remove channels
-                    # remove node from heartbeatdict - initiate gossip !!
+        #             rell = []
+        #             # update logical mesh
+        #             # inform middleware
+        #             # remove channels
+        #             # remove node from heartbeatdict - initiate gossip !!
         
-        global removed_nodes
-        removed_nodes = []
-        response_removed_nodes = {}
+        # global removed_nodes
+        # removed_nodes = []
+        # response_removed_nodes = {}
              
     print("Client started...")
