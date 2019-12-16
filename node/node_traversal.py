@@ -86,9 +86,9 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             curr_mesh = self.create_logical_mesh()
             print(curr_mesh)
             curr_path = self.find_shortest_path(curr_mesh)
-            # print(eval(curr_path))
+            print(type(curr_path))
             self.forward_response_data(str.encode("curr_data"), request.request_id, "", traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND,
-                                        str(curr_path))
+                                        curr_path)
         #    RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
             return traversal_pb2.ReceiveDataResponse(status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND)
 
@@ -152,7 +152,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
              status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND, file_bytes=globals.data_received)
 
     def RespondData(self, request, context):
-        t = threading.Thread(target=self.forward_response_data, args=(request.file_bytes, request.request_id, request.node_ip, request.status, request.path))
+        t = threading.Thread(target=self.forward_response_data, args=(request.file_bytes, request.request_id, request.node_ip, request.status, eval(request.path)))
         t.start()
         return traversal_pb2.ResponseDataResponse(
             status=traversal_pb2.ResponseDataResponse.TraversalResponseStatus.FORWARDED)
@@ -175,7 +175,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         return response
 
     def forward_response_data(self, file_bytes, request_id, node_ip, status, path):
-        curr_path = eval(path)
+        curr_path = path
         curr_coordinates = curr_path.pop()
         
         #check if data reached the initial invoking node
