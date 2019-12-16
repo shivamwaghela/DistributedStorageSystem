@@ -71,12 +71,12 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                 visited_ip.append(neighbor_conn.node_ip)
                 forward_conn_list.append(neighbor_conn)
 
-        print("Forwarded List: {}".format(self.forward_conn_list.node_ip for node_ip in forward_conn_list))
-        print("Neighbor List: {}".format(self.neighbor_conn_list.node_ip for node_ip in neighbor_conn_list))
+        print("Forwarded List: {}".format([conn.node_ip for conn in forward_conn_list]))
+        print("Neighbor List: {}".format([conn.node_ip for conn in neighbor_conn_list]))
         print("Visited List: {}".format(visited_ip))
 
-        logger.info("Forwarded List: {}".format(self.forward_conn_list.node_ip for node_ip in forward_conn_list))
-        logger.info("Neighbor List: {}".format(self.neighbor_conn_list.node_ip for node_ip in neighbor_conn_list))
+        logger.info("Forwarded List: {}".format([conn.node_ip for conn in forward_conn_list]))
+        logger.info("Neighbor List: {}".format([conn.node_ip for conn in neighbor_conn_list]))
         logger.info("Visited List: {}".format(visited_ip))
 
         threading_list = []
