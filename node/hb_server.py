@@ -69,6 +69,9 @@ def hb_serve():
         logger.info(globals.my_ip)
         my_ip = globals.my_ip
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        print("Server connectivity......")
+        
+        print("below")
         rumour_pb2_grpc.add_RumourServicer_to_server(RumourServicer(), server)
         server.add_insecure_port('[::]:50051')
         server.start()

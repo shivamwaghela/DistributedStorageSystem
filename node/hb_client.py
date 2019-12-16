@@ -26,6 +26,10 @@ def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
     try:
         with globals.lock:
             channel = grpc.insecure_channel(server_ip + ':50051')
+            if grpc.channel_ready_future(channel) == grpc.ChannelConnectivity.READY:
+                print("yes connected")
+            else:
+                print("gone down for"+server_ip)
             rumour_stub = rumour_pb2_grpc.RumourStub(channel)
             mesh_dict = {}
             removed_node_dict = []
