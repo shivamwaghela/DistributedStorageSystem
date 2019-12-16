@@ -74,5 +74,5 @@ def hb_serve():
         server.start()
         print("Server starting...")
         server.wait_for_termination()
-    catch Exception as e:
+    except Exception as e:
         print("in exception")
