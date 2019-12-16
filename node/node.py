@@ -88,8 +88,8 @@ if __name__ == "__main__":
         hb_memory_thread.start()
         # traversal_thread = threading.Thread(target=send_request)
         # traversal_thread.start()
-        pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
-        pulse_thread.start()
+        # pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
+        # pulse_thread.start()
         server_thread.join()
     else:
         if len(sys.argv) != 2:
@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
         server_thread.start()
 
-        pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
-        pulse_thread.start()
+        # pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
+        # pulse_thread.start()
 
         server_thread.join()
