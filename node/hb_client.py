@@ -74,7 +74,7 @@ def markNodes(heartbeat_meta_dict):
                 print("deleting from whole mesh.........")
                 print(i)
                 with globals.lock:
-                    if (i in hb_server.whole_mesh_dict[i]):
+                    if (i in hb_server.whole_mesh_dict):
                         del hb_server.whole_mesh_dict[i]
 
     for i in removed_nodes:
