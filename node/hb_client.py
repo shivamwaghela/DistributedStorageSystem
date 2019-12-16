@@ -46,6 +46,7 @@ def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
 
 def markNodes(heartbeat_meta_dict):
     print("in mark nodes.....")
+    whole_mesh_dict = hb_server.whole_mesh_dict
     rell = []
     for node in heartbeat_meta_dict:
         print("in hbbb,,,,,")
