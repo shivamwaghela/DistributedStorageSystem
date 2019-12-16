@@ -15,6 +15,7 @@ import threading
 from traversal_response_status import TraversalResponseStatus
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 gossip_dictionary = {"10.0.0.1": (0,0), "10.0.0.3": (0,2), "10.0.0.2": (0,1), "10.0.0.5": (1,2), "10.0.0.6": (1,0), "10.0.0.4": (1,1), "10.0.0.7": (2,1), "10.0.0.9": (2,0), "10.0.0.8": (2,2)}
 q = PriorityQueue()
 
@@ -67,7 +68,9 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         forward_conn_list = []
 
         for neighbor_conn in neighbor_conn_list:
+            logger.debug("visited_ip: {}".format(visited_ip))
             if neighbor_conn.node_ip not in visited_ip:
+                logger.debug("Adding {} in visited_ip and forward_conn_list".format(neighbor_conn.node_ip))
                 visited_ip.append(neighbor_conn.node_ip)
                 forward_conn_list.append(neighbor_conn)
 
@@ -85,13 +88,15 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             channel = forward_conn.channel #confirm
             logger.debug("Forwarded Node IP: {}".format(forward_node_ip))
         #    print("Channel: {}".format(channel))
-            forward_request_thread = threading.Thread(target=self.forward_receive_data_request, args=(forward_node_ip, channel, request))
+            forward_request_thread = threading.Thread(target=self.forward_receive_data_request,
+                                                      args=(forward_node_ip, channel, request, visited_ip))
             threading_list.append(forward_request_thread)
 
         for thread in threading_list:
             thread.start()
             #thread.join()
 
+        logger.debug("Return")
         return traversal_pb2.ReceiveDataResponse(
             status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FORWARDED) # confirm indentation
 
@@ -104,7 +109,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
 
 
     #XXX
-    def forward_receive_data_request(self, node_ip, channel, request):
+    def forward_receive_data_request(self, node_ip, channel, request, visited_ip):
         logger.info("forward_receive_data_request: node_ip: {}".format(node_ip))
 
         traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
@@ -112,8 +117,8 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             traversal_pb2.ReceiveDataRequest(
                                 hash_id=str(request.hash_id),
                                 request_id=str(request.request_id),
-                                stack=str(request.stack),
-                                visited=str(request.visited)))
+                                stack="",
+                                visited=str(visited_ip)))
         logger.info("forward_receive_data_request: response: {}".format(response))
         return response
 
