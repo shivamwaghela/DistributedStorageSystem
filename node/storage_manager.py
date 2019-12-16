@@ -30,7 +30,7 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
         assert chunk_size != 0
         assert number_of_chunks != 0
 
-        success = self.memory_manager.put_data(request_iterator, hash_id, number_of_chunks, False)
+        success = self.memory_manager.put_data(request_iterator, hash_id, chunk_size, number_of_chunks, False)
         return storage_pb2.ResponseBoolean(success=success)
 
     def upload_single_chunk(self, request_chunk, context):
@@ -51,7 +51,7 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
         assert hash_id != ""
         assert chunk_size != 0
 
-        success = self.memory_manager.put_data(request_chunk, hash_id, 1, True)
+        success = self.memory_manager.put_data(request_chunk, hash_id, chunk_size, 1, True)
         return storage_pb2.ResponseBoolean(success=success)
 
     def download_chunk_stream(self, request, context):
@@ -99,4 +99,10 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
         """
         return self.memory_manager.hash_id_exists(hash_id)
 
+    def download_list_of_data_chunks_non_rpc(self, hash_id):
+        """
+        :param hash_id: input string
+        :return: list of data chunks
+        """
+        return self.memory_manager.get_data(hash_id)
 

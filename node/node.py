@@ -25,6 +25,7 @@ from network_manager import NetworkManager
 from node_traversal import Traversal
 from storage_manager import StorageManagerServer
 
+storage_object = None
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
@@ -33,9 +34,7 @@ def serve():
     traversal_pb2_grpc.add_TraversalServicer_to_server(Traversal(), server)
     server.add_insecure_port("[::]:" + str(globals.port))
     logger.info("Server starting at port " + str(globals.port))
-    storage_pb2_grpc.add_FileServerServicer_to_server(
-        StorageManagerServer(globals.initial_node_memory_size_bytes,
-                             globals.initial_page_memory_size_bytes), server)
+    storage_pb2_grpc.add_FileServerServicer_to_server(storage_object, server)
     server.add_insecure_port("[::]:" + str(globals.port))
     logger.info("Server starting at port " + str(globals.port))
     server.start()
@@ -59,7 +58,6 @@ def send_request():
 
 if __name__ == "__main__":
     globals.init()
-
     logging.basicConfig(filename='node.log', filemode='w',
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(__name__)
@@ -74,6 +72,9 @@ if __name__ == "__main__":
                                      node_coordinates=my_node_coordinates, node_ip=globals.my_ip)
         globals.node_connections.add_connection(conn)
         logger.debug("NodeConnections.connection_dict: {}".format(globals.node_connections.connection_dict))
+
+        storage_object = StorageManagerServer(globals.initial_node_memory_size_bytes,
+                                              globals.initial_page_memory_size_bytes)
 
         logger.debug("Starting server thread...")
         server_thread = threading.Thread(target=serve)

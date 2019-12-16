@@ -28,6 +28,6 @@ def init():
     my_position = NodePosition.CENTER
     my_coordinates = None
     initial_node_memory_size_bytes = 1 * 1024 * 1024 * 1024  # start with 1 GB for storage
-    initial_page_memory_size_bytes = 1024  # start with 1K for storage
+    initial_page_memory_size_bytes = 512 * 1024 # start with 0.5MB for storage
     node_connections = NodeConnections()
     lock = threading.Lock()

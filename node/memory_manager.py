@@ -36,9 +36,6 @@ class MemoryManager:
     # Constructor
     def __init__(self, total_memory_size, page_size):
 
-        # self.logger = logging.getLogger(__name__)
-        # logger.setLevel(logging.INFO)
-        
         # define the attributes
         self.total_memory_size = total_memory_size
         self.page_size = page_size
@@ -52,8 +49,7 @@ class MemoryManager:
         logger.debug("Number of pages available in memory %s of size %s bytes." % (len(self.list_of_all_pages),
                                                                                            self.page_size))
 
-    # def put_data(self, memory_id, data_chunks, num_of_chunks):
-    def put_data(self, data_chunks, hash_id, number_of_chunks, is_single_chunk):
+    def put_data(self, data_chunks, hash_id, chunk_size, number_of_chunks, is_single_chunk):
         '''
         :param data_chunks:
         :param hash_id:
@@ -69,7 +65,10 @@ class MemoryManager:
         else:
             logger.debug("Writing new data with hash_id: %s." % hash_id)
 
-        pages_needed = number_of_chunks #self.get_number_of_pages_needed(chunk_size, number_of_chunks)
+        # if the incoming chunk size is bigger than the page sie
+        chunks_to_split_multiplier = math.ceil(chunk_size / self.page_size)
+        pages_needed = number_of_chunks * chunks_to_split_multiplier
+
         # find available blocks of pages to save the data
         target_list_indexes = self.find_n_available_pages(pages_needed)
         start_write_data = time.time()
@@ -78,10 +77,17 @@ class MemoryManager:
         index_counter = 0
         if not is_single_chunk:
             for c in data_chunks:
-                self.list_of_all_pages[target_list_indexes[index_counter]].put_data(c)
-                index_counter = index_counter + 1
+                if chunks_to_split_multiplier > 1:
+                    for p in range(0, chunks_to_split_multiplier):
+                        #print(p*self.page_size, ":",  (p+1)*self.page_size)
+                        self.list_of_all_pages[target_list_indexes[index_counter]].put_data(c.chunk[p*self.page_size: (p+1)*self.page_size])
+                        index_counter = index_counter + 1
+                else:
+                    self.list_of_all_pages[target_list_indexes[index_counter]].put_data(c.chunk)
+                    index_counter = index_counter + 1
+
         else:
-            self.list_of_all_pages[target_list_indexes[index_counter]].put_data(data_chunks)
+            self.list_of_all_pages[target_list_indexes[index_counter]].put_data(data_chunks.chunk)
             index_counter = index_counter + 1
 
         total_time_write_data = round(time.time() - start_write_data, 6)
@@ -96,14 +102,6 @@ class MemoryManager:
               (pages_needed, pages_needed * self.page_size, total_time_write_data))
         logger.debug("Free pages left: %s. Bytes left: %s" % (self.get_number_of_pages_available(), self.get_available_memory_bytes()))
         return True
-
-    # def get_number_of_pages_needed(self, chunk_size, data_size):
-    #     if self.page_size != chunk_size:
-    #         message = "Page set in the server is different than the chunk size specified. Please send the data with " \
-    #                   "the correct chunk from the client side. This will be supported in the future."
-    #         raise Exception(message)
-    #     else:
-    #         return math.ceil(data_size / chunk_size)  # taking ceiling to account for last page being partially occupied
 
     def get_number_of_pages_available(self):
         return self.total_number_of_pages - len(self.list_of_pages_used)

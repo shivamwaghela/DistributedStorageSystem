@@ -121,9 +121,12 @@ class Client:
         :param server_node_ip:
         :return: None
         """
+
+        chunk_size_payload = 1024  # set chunk stream size of 1KB # globals.initial_page_memory_size_bytes
         logger.info("Connecting to {} at port {}...".format(server_node_ip, globals.port))
         channel = grpc.insecure_channel(server_node_ip + ":" + str(globals.port))
         memory_storage_stub = storage_pb2_grpc.FileServerStub(channel)
+
 
         logger.info("Node memory available in bytes: {}"
                     .format(memory_storage_stub.get_node_available_memory_bytes(storage_pb2.EmptyRequest()).bytes))
@@ -138,7 +141,7 @@ class Client:
 
         metadata = (
             ('key-hash-id', hash_id),
-            ('key-chunk-size', str(globals.initial_page_memory_size_bytes)),
+            ('key-chunk-size', str(chunk_size_payload)),
         )
 
         # check if this hash is in memory already
@@ -175,20 +178,27 @@ class Client:
                         return
                     yield storage_pb2.ChunkRequest(chunk=chunk)
 
+        def save_chunks_to_file(filename, chunks):
+            with open("./" + filename, 'wb') as f:
+                for chunk in chunks:
+                    f.write(chunk.chunk)
+
+        chunk_size_payload = 3 * 1024 * 1024 # set chunk stream size to 3MB
         file_path = "./docs/mesh.png"
         file_size_bytes = os.path.getsize(file_path)
-        number_of_chunks = math.ceil(file_size_bytes / globals.initial_page_memory_size_bytes)
+        number_of_chunks = math.ceil(file_size_bytes / chunk_size_payload)
 
         metadata = (
             ('key-hash-id', hash_id),
-            ('key-chunk-size', str(globals.initial_page_memory_size_bytes)),
+            ('key-chunk-size', str(chunk_size_payload)),
             ('key-number-of-chunks', str(number_of_chunks)),
         )
+        message_stream_of_chunk_bytes = get_file_chunks(file_path, chunk_size_payload)
 
-        message_stream_of_chunk_bytes = get_file_chunks(file_path, globals.initial_page_memory_size_bytes)
         res4 = memory_storage_stub.upload_chunk_stream(message_stream_of_chunk_bytes, metadata=metadata)
         ("Was data uploaded {}".format(res4.success))
 
-
-
-
+        # download file request
+        stream_of_bytes_chunks_downloaded = memory_storage_stub.download_chunk_stream(storage_pb2.HashIdRequest(hash_id=hash_id))
+        output_path = "docs/mesh_out.png"
+        save_chunks_to_file(output_path, stream_of_bytes_chunks_downloaded)
