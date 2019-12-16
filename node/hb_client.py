@@ -108,7 +108,7 @@ def hb_client():
                     for i in rell:
                         print("delerting.........")
                         print(i)
-                        del whole_mesh_dict[i]
+                        del hb.server.whole_mesh_dict[i]
 
                     rell = []
                     # update logical mesh
