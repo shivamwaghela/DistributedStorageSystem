@@ -19,7 +19,7 @@ from traversal_response_status import TraversalResponseStatus
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-gossip_dictionary = {(10,10): "10.0.0.1", (10,11): "10.0.0.10", (11,11): "10.0.0.31", (11,10): "10.0.0.32", (11,9): "10.0.0.4"}
+gossip_dictionary = {(10,10): "10.0.0.1", (10,11): "10.0.0.10", (11,11): "10.0.0.31", (11,10): "10.0.0.4"}
 q = PriorityQueue()
 
 # up, left, right, down movements
@@ -63,11 +63,11 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         if data_found:
             for item in gossip_dictionary:
                 if gossip_dictionary[item] == request.requesting_node_ip:
-                    destination_x = item[0]
-                    destination_y = item[1]
+                    destination_x = item[0]-10
+                    destination_y = item[1]-10
                     break
-            source_x = globals.my_coordinates[0]
-            source_y = globals.my_coordinates[1]
+            source_x = globals.my_coordinates[0]-10
+            source_y = globals.my_coordinates[1]-10
 
             print("Source x: {}".format(source_x))
             print("Source y: {}".format(source_y))
@@ -184,11 +184,11 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                 break
         
         #check if channel is alive. if not, update the 2D matrix and calculate a new shortest path
-        if not channel.isAlive():
-            mesh = self.create_logical_mesh()
-            mesh[curr_coordinates[0]][curr_coordinates[1]] = 0
-            curr_path = self.find_shortest_path(mesh)
-            self.forward_response_data(file_bytes, request_id, node_ip, status, curr_path)
+        # if not channel.isAlive():
+        #     mesh = self.create_logical_mesh()
+        #     mesh[curr_coordinates[0]][curr_coordinates[1]] = 0
+        #     curr_path = self.find_shortest_path(mesh)
+        #     self.forward_response_data(file_bytes, request_id, node_ip, status, curr_path)
 
         #forward the request
         traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
@@ -206,28 +206,29 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
 
     #creating a 2D matrix to keep track of live and dead nodes
     def create_logical_mesh(self):
-        min_row = list(gossip_dictionary.keys())[0][0]
-        min_col = list(gossip_dictionary.keys())[0][1]
-        max_row = list(gossip_dictionary.keys())[len(gossip_dictionary)-1][0]
-        max_col = list(gossip_dictionary.keys())[len(gossip_dictionary)-1][1]
+        # min_row = list(gossip_dictionary.keys())[0][0]
+        # min_col = list(gossip_dictionary.keys())[0][1]
+        # max_row = list(gossip_dictionary.keys())[len(gossip_dictionary)-1][0]
+        # max_col = list(gossip_dictionary.keys())[len(gossip_dictionary)-1][1]
 
-        for key in gossip_dictionary:
-            if key[0] < min_row:
-                min_row = key[0]
-            if key[1] < min_col:
-                min_col = key[1]
-            if key[0] > max_row:
-                max_row = key[0]
-            if key[1] > max_col:
-                max_col = key[1]
+        # for key in gossip_dictionary:
+        #     if key[0] < min_row:
+        #         min_row = key[0]
+        #     if key[1] < min_col:
+        #         min_col = key[1]
+        #     if key[0] > max_row:
+        #         max_row = key[0]
+        #     if key[1] > max_col:
+        #         max_col = key[1]
 
-        cols = max_col - min_col + 1
-        rows = max_row - min_col + 1
-
+        # cols = max_col - min_col + 1
+        # rows = max_row - min_col + 1
+        cols = 20
+        rows = 20
         mesh = [[0]*cols]*rows
         
-        value_list = list(gossip_dictionary.values())
-        for item in value_list:
+        
+        for item in gossip_dictionary:
             mesh[item[0]][item[1]] = 1
         logger.info("Current mesh is: mesh : {}".format(mesh))
         return mesh
