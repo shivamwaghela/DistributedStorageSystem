@@ -22,9 +22,11 @@ def updatehearbeatdict(newnodeheartbeatdict):
     for node in newnodeheartbeatdict:
         if node in heartbeat_meta_dict:
             heartbeat_meta_dict[node] = max(heartbeat_meta_dict[node], newnodeheartbeatdict[node])
+            if heartbeat_meta_dict[globals.my_ip] < heartbeat_meta_dict[node]:
+                heartbeat_meta_dict[globals.my_ip] = heartbeat_meta_dict[node]
         else:
             heartbeat_meta_dict[node] = newnodeheartbeatdict[node]
-    
+
 
 def updatemeshdict(newnodemeshdict):
     print("new node mesh....")
@@ -71,7 +73,7 @@ def hb_serve():
         my_ip = globals.my_ip
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         print("Server connectivity......")
-        
+        heartbeat_meta_dict[globals.my_ip] = 1
         print("below")
         rumour_pb2_grpc.add_RumourServicer_to_server(RumourServicer(), server)
         server.add_insecure_port('[::]:50051')
