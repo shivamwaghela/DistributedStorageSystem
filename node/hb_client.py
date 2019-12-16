@@ -121,7 +121,9 @@ def hb_client():
             element = gossip_queue.popleft()
             whole_mesh_dict[element["pos"]] = element["ip"]
             # action = "add"
-
+        if globals.my_ip in heartbeat_meta_dict:
+            myheartbeatcount = heartbeat_meta_dict[globals.my_ip]+1
+        else:
         myheartbeatcount = myheartbeatcount + 1
         print("my ip" + globals.my_ip)
         heartbeat_meta_dict[globals.my_ip] = myheartbeatcount
