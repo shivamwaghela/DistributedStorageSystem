@@ -71,7 +71,7 @@ def markNodes(heartbeat_meta_dict):
         # if (myheartbeatcount-heartbeat_meta_dict[node]) >= 3:
         #     suspended_nodes.append(node)
         
-        if (myheartbeatcount-heartbeat_meta_dict[node]) >= 6:
+        if (myheartbeatcount-heartbeat_meta_dict[node]) > 10:
             removed_nodes.append(node)
             for i in whole_mesh_dict:
                 if whole_mesh_dict[i] == node:
