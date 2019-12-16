@@ -62,8 +62,6 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
-
-
     if len(sys.argv) == 3:
         logger.info("Starting first node of the network at position: ({},{})"
                     .format(sys.argv[1], sys.argv[2]))
