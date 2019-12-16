@@ -19,13 +19,17 @@ gossip_queue = deque()
 neighbour_dict = []
 suspended_nodes = []
 def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
-    channel = grpc.insecure_channel(server_ip + ':50051')
-    rumour_stub = rumour_pb2_grpc.RumourStub(channel)
-    mesh_dict = {}
-    if action:
-        mesh_dict = whole_mesh_dict
-    rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
-                                                    heartbeatdict=str(heartbeat_meta_dict)))
+    try:
+        channel = grpc.insecure_channel(server_ip + ':50051')
+        rumour_stub = rumour_pb2_grpc.RumourStub(channel)
+        mesh_dict = {}
+        if action:
+            mesh_dict = whole_mesh_dict
+        rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
+                                                        heartbeatdict=str(heartbeat_meta_dict)))
+    except Exception as e:
+        print("in eceprion")
+        print(e)
 
 def markNodes(heartbeat_meta_dict):
     for node in heartbeat_meta_dict:
