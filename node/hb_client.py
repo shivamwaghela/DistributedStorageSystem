@@ -41,7 +41,7 @@ def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
         if node in response_removed_nodes:
             response_removed_nodes[node] += 1
         else:
-            response_removed_nodes[node] = 0
+            response_removed_nodes[node] = 1
 
 def markNodes(heartbeat_meta_dict):
     print("in mark nodes.....")
