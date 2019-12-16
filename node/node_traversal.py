@@ -17,7 +17,7 @@ from traversal_response_status import TraversalResponseStatus
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-gossip_dictionary = {"10.0.0.1": (0,0), "10.0.0.3": (0,2), "10.0.0.2": (0,1), "10.0.0.5": (1,2), "10.0.0.6": (1,0), "10.0.0.4": (1,1), "10.0.0.7": (2,1), "10.0.0.9": (2,0), "10.0.0.8": (2,2)}
+gossip_dictionary = {"10.0.0.3": (10,10), "10.0.0.10": (10,11), "10.0.0.4": (11,10), "10.0.0.31": (11,11), "10.0.0.32": (12,11)}
 q = PriorityQueue()
 
 # up, left, right, down movements
@@ -56,13 +56,13 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                     .format(request.hash_id, request.request_id, request.visited))
         # print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
         #             .format(request.hash_id, request.request_id, request.visited))
-        data_found = True
+        data_found = False
         # Check if the file exits on current node
         if data_found:
            curr_data = fetch_data(request.hash_id)
            curr_mesh = self.create_logical_mesh()
            curr_path = self.find_shortest_path(curr_mesh)
-           self.forward_response_data(curr_data, request.request_id, request.node_ip, traversal_response_status.FOUND,
+           self.forward_response_data(curr_data, request.request_id, "", traversal_response_status.FOUND,
                                       curr_path)
         #    RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
            return traversal_pb2.ReceiveDataResponse(status = str(traversal_response_status.FOUND))
