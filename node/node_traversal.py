@@ -82,7 +82,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             # traversal_stub.SendData(traversal_pb2.SendDataRequest(
             #     file_bytes=str.encode("mydata"), request_id=request.request_id, client_node_ip=globals.my_ip))
             
-            curr_data = fetch_data(request.hash_id)
+            curr_data = self.fetch_data(request.hash_id)
             curr_mesh = self.create_logical_mesh()
             print(curr_mesh)
             curr_path = self.find_shortest_path(curr_mesh)
