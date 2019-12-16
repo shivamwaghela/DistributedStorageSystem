@@ -181,7 +181,9 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         #check if data reached the initial invoking node
         # if curr_path.empty():
         #     return file_bytes
-        
+
+        logger.debug("forward_response_data: curr_coordinates: {}".format(curr_coordinates))
+        logger.debug("forward_response_data: path: {}".format(path))
         #get the channel through which the data will be propogated
         channel = None
         for item in globals.node_connections.connection_dict.items():
@@ -333,7 +335,6 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         global path
         path.append(co_ords)
         print("{", node.x, node.y, "}")
-        logger.debug("Response Path {}".format(path))
         print(path)
         return path
         
