@@ -21,8 +21,6 @@ suspended_nodes = []
 global removed_nodes
 removed_nodes = []
 response_removed_nodes = {}
-global myheartbeatcount
-myheartbeatcount = 1
 
 def sendMsg(server_ip, whole_mesh_dict, heartbeat_meta_dict):
     try:
@@ -41,7 +39,7 @@ def sendMsg(server_ip, whole_mesh_dict, heartbeat_meta_dict):
         # if len(removed_nodes) != 0:
         #     removed_node_dict = removed_nodes
 
-        response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=heartbeat_meta_dict[globals.my_ip], wholemesh=str(whole_mesh_dict),
+        response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(whole_mesh_dict),
                                                         heartbeatdict=str(heartbeat_meta_dict), removednodes=str(removed_node_dict)))
         
             #channel.close()
@@ -57,19 +55,19 @@ def sendMsg(server_ip, whole_mesh_dict, heartbeat_meta_dict):
     #         response_removed_nodes[node] = 1
 
 def markNodes(heartbeat_meta_dict):
-    # print("in mark nodes.....")
+    print("in mark nodes.....")
     whole_mesh_dict = hb_server.whole_mesh_dict
-    #heartbeat_meta_dict = hb_server.heartbeat_meta_dict
+    heartbeat_meta_dict = hb_server.heartbeat_meta_dict
     rell = []
     removed_nodes = []
-    global myheartbeatcount
+
     for node in heartbeat_meta_dict:
-        # if (node == globals.my_ip):
-        #     continue
+        if (node == globals.my_ip):
+            continue
         # print("in hbbb,,,,,")
-        # print(myheartbeatcount)
+        print(myheartbeatcount)
         # print(".....")
-        # print(heartbeat_meta_dict[node])
+        print(heartbeat_meta_dict[node])
         # if (myheartbeatcount-heartbeat_meta_dict[node]) >= 3:
         #     suspended_nodes.append(node)
         
@@ -104,7 +102,8 @@ def markNodes(heartbeat_meta_dict):
 
 
 def hb_client():
-    global response_removed_nodes, myheartbeatcount
+    global myheartbeatcount, response_removed_nodes
+    myheartbeatcount = 1
     whole_mesh_dict = hb_server.whole_mesh_dict
     heartbeat_meta_dict = hb_server.heartbeat_meta_dict
     while True:
@@ -113,7 +112,7 @@ def hb_client():
         for item in globals.node_connections.connection_dict.items():
             if item[1].node_coordinates not in whole_mesh_dict:
                 gossip_queue.append({"ip":item[1].node_ip,"pos":item[1].node_coordinates})
-                #heartbeat_meta_dict[item[1].node_ip] = myheartbeatcount
+                heartbeat_meta_dict[item[1].node_ip] = myheartbeatcount
             if item[1].node_ip != globals.my_ip and item[1].node_ip not in neighbour_dict:
                 neighbour_dict.append(item[1].node_ip)
 
@@ -124,13 +123,13 @@ def hb_client():
             # action = "add"
         # if globals.my_ip in heartbeat_meta_dict:
         #     myheartbeatcount = heartbeat_meta_dict[globals.my_ip]+1
-        # myheartbeatcount = myheartbeatcount + 1
+        myheartbeatcount = myheartbeatcount + 1
         print("my ip" + globals.my_ip)
-        hb_server.heartbeat_meta_dict[globals.my_ip] += 1 #myheartbeatcount
-        markNodes(hb_server.heartbeat_meta_dict)
+        heartbeat_meta_dict[globals.my_ip] = myheartbeatcount
+        markNodes(heartbeat_meta_dict)
 
         for neighbour in neighbour_dict:
-            sendMsg(neighbour,hb_server.whole_mesh_dict,hb_server.heartbeat_meta_dict)
+            sendMsg(neighbour,whole_mesh_dict,heartbeat_meta_dict)
 
         # if response_removed_nodes:
         #     for key in response_removed_nodes:
