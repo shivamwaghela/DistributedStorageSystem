@@ -27,15 +27,14 @@ class SpaceBinaryTree:
     '''
 
     # Constructor
-    def __init__(self, size, free_pages):
+    def __init__(self, free_pages):
         #keep track of the number of pages free
-        self.free_pages = size
+        self.free_pages = free_pages
         # define the attributes
         #creating the list of indexes to keep track.
-        free_pages = [x for x in range(free_pages)]
+        free_pages_available = [x for x in range(free_pages)]
         # self.head = TreeNode(node_left=None, node_right=None, size=size, free_pages=free_pages)
-        self.sorted_dict = SortedDict({size: TreeNode(size=size,
-                                                      free_pages=[free_pages])})
+        self.sorted_dict = SortedDict({free_pages: TreeNode(free_pages=[free_pages_available])})
 
     def set_empty_space(self, num_of_slots, free_pages):
         if DEBUG:
@@ -149,6 +148,7 @@ class SpaceBinaryTree:
                     if DEBUG:
                         print("[SpaceBinaryTree] Getting the largest chunk node into a temp location")
                     temp_node = self.sorted_dict.pop(largest_chuck)
+                    self.set_num_free_pages(REMOVE, largest_chuck)
                     #print("[SpaceBinaryTree] Temp node popped out of list = {}".format(temp_node.get_size()))
                     #find if the node free pages list is not empty
                     #print("[SpaceBinaryTree] Temp node is empty = {}".format(temp_node.is_node_empty()))
@@ -180,7 +180,7 @@ class SpaceBinaryTree:
                                 if i >= PRINT_LIST_BREAK:
                                     break
                         #keep track of the total number of pages available
-                        self.set_num_free_pages(REMOVE, number_of_chunks)
+                        # self.set_num_free_pages(REMOVE, number_of_chunks)
                         if DEBUG:
                             print("[SpaceBinaryTree] removing the number of spaces from the number of available spaces")
                             print("[SpaceBinaryTree] calling set_free_pages with {}: {}".format(REMOVE, number_of_chunks))
