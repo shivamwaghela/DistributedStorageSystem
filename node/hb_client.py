@@ -107,7 +107,7 @@ def hb_client():
     whole_mesh_dict = hb_server.whole_mesh_dict
     heartbeat_meta_dict = hb_server.heartbeat_meta_dict
     while True:
-        time.sleep(5) 
+        time.sleep(3) 
         local_mesh = {}
         for item in globals.node_connections.connection_dict.items():
             if item[1].node_coordinates not in whole_mesh_dict:
