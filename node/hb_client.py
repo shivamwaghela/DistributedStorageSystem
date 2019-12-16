@@ -23,7 +23,7 @@ removed_nodes = []
 response_removed_nodes = {}
 
 def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
-    with global.lock:
+    with globals.lock:
         channel = grpc.insecure_channel(server_ip + ':50051')
         rumour_stub = rumour_pb2_grpc.RumourStub(channel)
         mesh_dict = {}
@@ -73,12 +73,12 @@ def markNodes(heartbeat_meta_dict):
             for i in rell:
                 print("deleting from whole mesh.........")
                 print(i)
-                with global.lock:
+                with globals.lock:
                     del hb_server.whole_mesh_dict[i]
 
     for i in removed_nodes:
         print("deleting from hb....")
-        with global.lock:
+        with globals.lock:
             del hb_server.heartbeat_meta_dict[i]
         
     # print("....mk...")
