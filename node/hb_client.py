@@ -101,7 +101,7 @@ def hb_client():
                             print("rremoving key......")
                             print(i)
                             print(whole_mesh_dict[i])
-                            whole_mesh_dict.remove(i)
+                            del whole_mesh_dict[i]
                     # update logical mesh
                     # inform middleware
                     # remove channels
