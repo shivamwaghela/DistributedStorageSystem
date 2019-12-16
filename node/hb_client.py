@@ -98,16 +98,8 @@ def hb_client():
     heartbeat_meta_dict = hb_server.heartbeat_meta_dict
     
     while True:
-        time.sleep(5) 
-
-        # try:
-        #     grpc.channel_ready_future(hb_server.).result(timeout=1)
-        # except grpc.FutureTimeoutError:
-
         local_mesh = {}
         for item in globals.node_connections.connection_dict.items():
-            print("in neighbour...")
-            print(item[1].node_ip)
             if item[1].node_coordinates not in whole_mesh_dict:
                 gossip_queue.append({"ip":item[1].node_ip,"pos":item[1].node_coordinates})
                 heartbeat_meta_dict[item[1].node_ip] = myheartbeatcount
@@ -115,7 +107,7 @@ def hb_client():
                 neighbour_dict.append(item[1].node_ip)
 
         print(neighbour_dict)
-        #time.sleep(5) 
+        time.sleep(5) 
         while gossip_queue:
             element = gossip_queue.popleft()
             whole_mesh_dict[element["pos"]] = element["ip"]
