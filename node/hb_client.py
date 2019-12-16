@@ -47,17 +47,20 @@ def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
 def markNodes(heartbeat_meta_dict):
     print("in mark nodes.....")
     whole_mesh_dict = hb_server.whole_mesh_dict
+    heartbeat_meta_dict = hb_server.heartbeat_meta_dict
     rell = []
+    removed_nodes = []
+    
     for node in heartbeat_meta_dict:
-        print("in hbbb,,,,,")
+        # print("in hbbb,,,,,")
         print(myheartbeatcount)
-        print(".....")
+        # print(".....")
         print(heartbeat_meta_dict[node])
         # if (myheartbeatcount-heartbeat_meta_dict[node]) >= 3:
         #     suspended_nodes.append(node)
         
         if (myheartbeatcount-heartbeat_meta_dict[node]) >= 3:
-            #removed_nodes.append(node)
+            removed_nodes.append(node)
             for i in whole_mesh_dict:
                 if whole_mesh_dict[i] == node:
                     print("rremoving key......")
@@ -65,12 +68,16 @@ def markNodes(heartbeat_meta_dict):
                     rell.append(i)
 
             for i in rell:
-                print("delerting.........")
+                print("deleting from whole mesh.........")
                 print(i)
                 del hb_server.whole_mesh_dict[i]
 
-    print("....mk...")
-    print(removed_nodes)
+    for i in removed_nodes:
+        print("deleting from hb....")
+        del hb_server.heartbeat_meta_dict[i]
+        
+    # print("....mk...")
+    # print(removed_nodes)
             #whole_mesh_dict.remove(node.split('-')[0])
 
 
