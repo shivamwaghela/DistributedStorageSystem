@@ -63,6 +63,8 @@ def markNodes(heartbeat_meta_dict):
     removed_nodes = []
 
     for node in heartbeat_meta_dict:
+        if (node == globals.my_ip):
+            continue
         # print("in hbbb,,,,,")
         print(myheartbeatcount)
         # print(".....")
