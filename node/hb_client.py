@@ -55,12 +55,10 @@ def sendMsg(server_ip, whole_mesh_dict, heartbeat_meta_dict):
     #         response_removed_nodes[node] = 1
 
 def markNodes(heartbeat_meta_dict):
-    print("in mark nodes.....")
     whole_mesh_dict = hb_server.whole_mesh_dict
     heartbeat_meta_dict = hb_server.heartbeat_meta_dict
     rell = []
     removed_nodes = []
-
     for node in heartbeat_meta_dict:
         if (node == globals.my_ip):
             continue
@@ -75,18 +73,13 @@ def markNodes(heartbeat_meta_dict):
             removed_nodes.append(node)
             for i in whole_mesh_dict:
                 if whole_mesh_dict[i] == node:
-                    print("rremoving key......")
-                    print(i)
                     rell.append(i)
 
             for i in rell:
-                print("deleting from whole mesh.........")
-                print(i)
                 if (i in hb_server.whole_mesh_dict):
                     del hb_server.whole_mesh_dict[i]
 
-    for i in removed_nodes:
-        print("deleting from hb....")       
+    for i in removed_nodes:    
         if i in hb_server.heartbeat_meta_dict:
             del hb_server.heartbeat_meta_dict[i]
 
@@ -116,7 +109,7 @@ def hb_client():
             if item[1].node_ip != globals.my_ip and item[1].node_ip not in neighbour_dict:
                 neighbour_dict.append(item[1].node_ip)
 
-        print(neighbour_dict)
+        #print(neighbour_dict)
         while gossip_queue:
             element = gossip_queue.popleft()
             whole_mesh_dict[element["pos"]] = element["ip"]
