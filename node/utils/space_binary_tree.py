@@ -52,10 +52,8 @@ class SpaceBinaryTree:
         The data structure can find the exact number of pages requested
         if it does find a spot that fits, it can allocate that space
         '''
-        print("[SpaceBinaryTree] Number of chunks needed = {}".format(number_of_chunks))
         #print("[SpaceBinaryTree] resultado del if = {}".format(self.sorted_dict.get(number_of_chunks)))
         if self.sorted_dict.get(number_of_chunks):
-            print("[SpaceBinaryTree] inside if number of chunks matches available")
             ret_list = self.sorted_dict.get(number_of_chunks).free_pages.pop(0)
             return ret_list
         else:

@@ -1,5 +1,5 @@
-import grpc
 import globals
+
 
 class NodeConnections:
     """
@@ -51,18 +51,3 @@ class NodeConnections:
             return True
 
         return False
-
-    def get_connection_status(self):
-        """
-        Checks status of channels
-        :return: Dictionary containing status of connections
-        """
-        connection_status = {}
-        for node_position, connection in self.connection_dict:
-            try:
-                grpc.channel_ready_future(connection.channel).result(timeout=1)
-            except grpc.FutureTimeoutError:
-                connection_status[node_position] = False
-            connection_status[node_position] = True
-
-        return connection_status

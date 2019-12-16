@@ -34,9 +34,7 @@ def serve():
     traversal_pb2_grpc.add_TraversalServicer_to_server(Traversal(), server)
     server.add_insecure_port("[::]:" + str(globals.port))
     logger.info("Server starting at port " + str(globals.port))
-    storage_pb2_grpc.add_FileServerServicer_to_server(
-        StorageManagerServer(globals.initial_node_memory_size_bytes,
-                             globals.initial_page_memory_size_bytes), server)
+    storage_pb2_grpc.add_FileServerServicer_to_server(globals.storage_object, server)
     server.add_insecure_port("[::]:" + str(globals.port))
     logger.info("Server starting at port " + str(globals.port))
     server.start()
@@ -62,7 +60,6 @@ def send_request():
 
 if __name__ == "__main__":
     globals.init()
-
     logging.basicConfig(filename='node.log', filemode='w',
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     logger = logging.getLogger(__name__)
@@ -93,7 +90,8 @@ if __name__ == "__main__":
 
         client_thread = threading.Thread(target=Client.greet, args=(sys.argv[1],))
         server_thread = threading.Thread(target=serve)
-        # storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],))
+        # for testing storage client only
+        #storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],))
         # XXX
         traversal_thread = threading.Thread(target=send_request)
         traversal_thread.start()

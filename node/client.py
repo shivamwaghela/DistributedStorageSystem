@@ -1,6 +1,7 @@
 import os
 import sys
 import hashlib
+import math
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
@@ -120,24 +121,27 @@ class Client:
         :param server_node_ip:
         :return: None
         """
+
+        chunk_size_payload = 1024  # set chunk stream size of 1KB # globals.initial_page_memory_size_bytes
         logger.info("Connecting to {} at port {}...".format(server_node_ip, globals.port))
         channel = grpc.insecure_channel(server_node_ip + ":" + str(globals.port))
         memory_storage_stub = storage_pb2_grpc.FileServerStub(channel)
+
 
         logger.info("Node memory available in bytes: {}"
                     .format(memory_storage_stub.get_node_available_memory_bytes(storage_pb2.EmptyRequest()).bytes))
 
         # prepare message to save in memory (this can be a file too)
-        message = "Hello my name is Gash".encode()
+        message = "Hello my name is John".encode()
         logger.info("Attempting to upload message: {}".format(message))
-        message_id = "1223"
+        message_id = "122333"
         # create sample hash
         hash_id = hashlib.sha1(message_id.encode()).hexdigest()
         message_chunk_bytes = storage_pb2.ChunkRequest(chunk=message)
 
         metadata = (
             ('key-hash-id', hash_id),
-            ('key-chunk-size', str(globals.initial_page_memory_size_bytes)),
+            ('key-chunk-size', str(chunk_size_payload)),
         )
 
         # check if this hash is in memory already
@@ -145,7 +149,7 @@ class Client:
         logger.info("Hash Exist in Node: {}".format(res.success)) # should not exist at the beginning
 
         # send message as a chunk
-        res2 = memory_storage_stub.upload_single_chunk(message_chunk_bytes, 1, metadata=metadata)
+        res2 = memory_storage_stub.upload_single_chunk(message_chunk_bytes, metadata=metadata)
         logger.info("Was data uploaded {}".format(res2.success))
         res3 = memory_storage_stub.is_hash_id_in_memory(storage_pb2.HashIdRequest(hash_id=hash_id))
         logger.info("Hash Exist in Node: {}".format(res3.success)) # should exist at the beginning
@@ -165,6 +169,36 @@ class Client:
         for hash_ in memory_storage_stub.get_stored_hashes_list_iterator(storage_pb2.EmptyRequest()):
             logger.info(hash_.hash_id)
 
+        # send stream of chucks from a file
+        def get_file_chunks(file_path, chunk_size):
+            with open(file_path, 'rb') as f:
+                while True:
+                    chunk = f.read(chunk_size)
+                    if len(chunk) == 0:
+                        return
+                    yield storage_pb2.ChunkRequest(chunk=chunk)
 
+        def save_chunks_to_file(filename, chunks):
+            with open("./" + filename, 'wb') as f:
+                for chunk in chunks:
+                    f.write(chunk.chunk)
 
+        chunk_size_payload = 3 * 1024 * 1024 # set chunk stream size to 3MB
+        file_path = "./docs/mesh.png"
+        file_size_bytes = os.path.getsize(file_path)
+        number_of_chunks = math.ceil(file_size_bytes / chunk_size_payload)
 
+        metadata = (
+            ('key-hash-id', hash_id),
+            ('key-chunk-size', str(chunk_size_payload)),
+            ('key-number-of-chunks', str(number_of_chunks)),
+        )
+        message_stream_of_chunk_bytes = get_file_chunks(file_path, chunk_size_payload)
+
+        res4 = memory_storage_stub.upload_chunk_stream(message_stream_of_chunk_bytes, metadata=metadata)
+        ("Was data uploaded {}".format(res4.success))
+
+        # download file request
+        stream_of_bytes_chunks_downloaded = memory_storage_stub.download_chunk_stream(storage_pb2.HashIdRequest(hash_id=hash_id))
+        output_path = "docs/mesh_out.png"
+        save_chunks_to_file(output_path, stream_of_bytes_chunks_downloaded)
