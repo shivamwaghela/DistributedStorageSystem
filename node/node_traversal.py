@@ -35,15 +35,6 @@ path = []
 destination_x = 0
 destination_y = 0
 
-# XXX
-def find_data(hash_id):
-    return random.choice([True, False])
-
-
-# XXX
-def fetch_data(hash_id):
-    return "data"
-
 # Nodes for shortest path
 class Node:
     def __init__(self, x, y, w, parent):
@@ -54,6 +45,14 @@ class Node:
 
 # XXX
 class Traversal(traversal_pb2_grpc.TraversalServicer):
+    # XXX
+    def find_data(self, hash_id):
+        return random.choice([True, False])
+
+    # XXX
+    def fetch_data(self, hash_id):
+        return "data"
+
     def ReceiveData(self, request, context):
         logger.info("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
                     .format(request.hash_id, request.request_id, request.visited))
@@ -333,6 +332,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         global path
         path.append(co_ords)
         print("{", node.x, node.y, "}")
+        logger.debug("Response Path {}".format(path))
         print(path)
         return path
         
