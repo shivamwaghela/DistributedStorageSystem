@@ -104,5 +104,3 @@ def get_best_path(whole_mesh_dict, destination_ipaddress):
     path = bfs(string_list, (source_cooridinates[1], source_cooridinates[0]))
     print("PATH==", path)
     return path
-
-

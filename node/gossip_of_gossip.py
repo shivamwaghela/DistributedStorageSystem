@@ -13,15 +13,19 @@ import grpc
 import ast
 import globals
 
-sys.path.append('./proto')
-sys.path.append('./service')
+
 import grpc
 import time
 import math
 from threading import Lock, Thread
 import collections
 import numpy as np
+sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
 
+import rumour_pb2
+import rumour_pb2_grpc
 
 class GossipProtocol:
     capacity_of_neighbors_fixed = [1200, 3100, 7000, 5558]  # maintains the list of nodes
@@ -39,7 +43,7 @@ class GossipProtocol:
     listofNeighbors = []
     path = ["(0,0)", "(0,1)", "(0,2)"]
     counter = 1
-    IPaddress = "169.105.246.3"
+    IPaddress = globals.my_ip
     localPort = 21000
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     UDPServerSocket.bind((IPaddress, localPort))
@@ -159,24 +163,21 @@ class GossipProtocol:
 
     def fetch_all_neighbors(self):
         list_of_neigbors = []
-        filepath = '../metadata/neighbors.txt'
-        with open(filepath, "r") as ins:
-            for line in ins:
-                print(line)
-                line = line.strip('\n')
-                list_of_neigbors.append(line)
+        for item in globals.node_connections.connection_dict.items():
+            if item[1].node_ip != globals.my_ip and item[1].node_ip not in list_of_neigbors:
+                list_of_neigbors.append(item[1].node_ip)
         return list_of_neigbors
 
     def get_minimum_capacity_neighbors(self, initalReplicaServer):
-        list_of_neigbors = []
         capacity_of_neighbors = {}
-        filepath = '../metadata/neighbors.txt'
-        with open(filepath, "r") as ins:
-            for line in ins:
-                print(line)
-                line = line.strip('\n')
-                list_of_neigbors.append(line)
+        list_of_neigbors = []
+        for item in globals.node_connections.connection_dict.items():
+            if item[1].node_ip != globals.my_ip and item[1].node_ip not in list_of_neigbors:
+                list_of_neigbors.append(item[1].node_ip)
+
+        print("Updated List of neigbors = ", list_of_neigbors)
         counter = 0
+
         self.listofNeighbors = list_of_neigbors
         if initalReplicaServer in list_of_neigbors:
             list_of_neigbors.remove(initalReplicaServer)
@@ -192,23 +193,23 @@ class GossipProtocol:
                 response = os.system("ping -c 1 " + hostname.decode("utf-8"))
                 # and then check the response
                 if response == 0:
-                    print(hostname, 'up')
-                    # Call to check capacity
-                    if hostname2 == "169.105.246.6":
-                        coordinates = "(1,1)"
-                    elif hostname2 == "169.105.246.7":
-                        coordinates = "(0,0)"
-                    else:
-                        coordinates = "(0,2)"
-                    print("GET COORDINATES CAP OF", coordinates)
-                    channel = grpc.insecure_channel('localhost:50061')
-                    rumour_stub = rumour_pb2_grpc.RumourStub(channel)
-                    print(rumour_stub)
-                    response = rumour_stub.sendMemoryData(rumour_pb2.MemoryStatsRequest())
-                    print(response)
-                    IPaddress, capacity = self.getneighborcapacity(coordinates)
-                    print("GET CAPACITY OF NEIGHBORS = ", IPaddress, capacity)
-                    capacity_of_neighbors[IPaddress] = capacity
+                    # print(hostname, 'up')
+                    # # Call to check capacity
+                    # if hostname2 == "169.105.246.6":
+                    #     coordinates = "(1,1)"
+                    # elif hostname2 == "169.105.246.7":
+                    #     coordinates = "(0,0)"
+                    # else:
+                    #     coordinates = "(0,2)"
+                    #print("GET COORDINATES CAP OF", coordinates)
+                    # channel = grpc.insecure_channel('localhost:50061')
+                    # rumour_stub = rumour_pb2_grpc.RumourStub(channel)
+                    # print(rumour_stub)
+                    # response = rumour_stub.sendMemoryData(rumour_pb2.MemoryStatsRequest())
+                    # print(response)
+                    capacity = self.getneighborcapacity(hostname2)
+                    print("GET CAPACITY OF NEIGHBORS = ", capacity)
+                    capacity_of_neighbors[hostname2] = capacity
                     counter += 1
                     list_of_neigbors.remove(hostname2)
                 else:
@@ -240,8 +241,11 @@ class GossipProtocol:
             BlackListedNodes = data.get("BlackListedNodes")
             if len(BlackListedNodes) >= 3:
                 best_ip_addresses = list(Dictionary.keys())
-                globals.nodes_for_replication = []
-                globals.nodes_for_replication.append(best_ip_addresses)
+                if globals.nodes_for_replication == None:
+                    globals.nodes_for_replication = []
+                    globals.nodes_for_replication.append(best_ip_addresses)
+                else:
+                    globals.nodes_for_replication.append(best_ip_addresses)
                 continue
             if str(IPaddress) == self.IPaddress and gossip_flag == False:
                 print("Faaaaaaaaaaaaaaaaaakkkkkk")
@@ -383,11 +387,16 @@ class GossipProtocol:
         return nodes[next_node]
 
     def getneighborcapacity(self, next_node):
-        with open('../metadata/metadata.json', 'r') as f:
-            metadata_dict = json.load(f)
-        nodes = metadata_dict['capacities']
-        print("all nodes", nodes[next_node])
-        return nodes[next_node][0], nodes[next_node][1]
+        ip_port = next_node + ":50061"
+        channel = grpc.insecure_channel(ip_port)
+        rumour_stub = rumour_pb2_grpc.RumourStub(channel)
+        response = rumour_stub.sendMemoryData(rumour_pb2.MemoryStatsRequest())
+        # with open('../metadata/metadata.json', 'r') as f:
+        #     metadata_dict = json.load(f)
+        # nodes = metadata_dict['capacities']
+        # print("all nodes", nodes[next_node])
+        # return nodes[next_node][0], nodes[next_node][1]
+        return next_node,response
 
     def start_threads(self):
         # Thread(target=self.replicateContent()).start()
