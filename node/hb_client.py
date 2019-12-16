@@ -23,20 +23,21 @@ removed_nodes = []
 response_removed_nodes = {}
 
 def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
-    channel = grpc.insecure_channel(server_ip + ':50051')
-    rumour_stub = rumour_pb2_grpc.RumourStub(channel)
-    mesh_dict = {}
-    removed_node_dict = []
-    if action:
-        mesh_dict = whole_mesh_dict
+    with global.lock:
+        channel = grpc.insecure_channel(server_ip + ':50051')
+        rumour_stub = rumour_pb2_grpc.RumourStub(channel)
+        mesh_dict = {}
+        removed_node_dict = []
+        if action:
+            mesh_dict = whole_mesh_dict
 
-    # if len(removed_nodes) != 0:
-    #     removed_node_dict = removed_nodes
+        # if len(removed_nodes) != 0:
+        #     removed_node_dict = removed_nodes
 
-    response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
-                                                    heartbeatdict=str(heartbeat_meta_dict), removednodes=str(removed_node_dict)))
-    
-    channel.close()
+        response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
+                                                        heartbeatdict=str(heartbeat_meta_dict), removednodes=str(removed_node_dict)))
+        
+        channel.close()
     # ngbrremovednodes = eval(response.removednodes)
     # print("nggg...")
     # print(ngbrremovednodes)
@@ -72,11 +73,13 @@ def markNodes(heartbeat_meta_dict):
             for i in rell:
                 print("deleting from whole mesh.........")
                 print(i)
-                del hb_server.whole_mesh_dict[i]
+                with global.lock:
+                    del hb_server.whole_mesh_dict[i]
 
     for i in removed_nodes:
         print("deleting from hb....")
-        del hb_server.heartbeat_meta_dict[i]
+        with global.lock:
+            del hb_server.heartbeat_meta_dict[i]
         
     # print("....mk...")
     # print(removed_nodes)
