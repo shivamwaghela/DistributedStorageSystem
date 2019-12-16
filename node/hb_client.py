@@ -44,11 +44,20 @@ def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
             response_removed_nodes[node] = 0
 
 def markNodes(heartbeat_meta_dict):
+    print("in mark nodes.....")
     for node in heartbeat_meta_dict:
+        print("in hbbb,,,,,")
+        print(myheartbeatcount)
+        print(".....")
+        print(heartbeat_meta_dict[node])
+        # if (myheartbeatcount-heartbeat_meta_dict[node]) >= 3:
+        #     suspended_nodes.append(node)
+        
         if (myheartbeatcount-heartbeat_meta_dict[node]) >= 3:
-            suspended_nodes.append(node)
-        elif (myheartbeatcount-heartbeat_meta_dict[node]) >= 5:
             removed_nodes.append(node)
+
+    print("....mk...")
+    print(removed_nodes)
             #whole_mesh_dict.remove(node.split('-')[0])
 
 
