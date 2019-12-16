@@ -64,7 +64,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             channel = grpc.insecure_channel(request.requesting_node_ip + ":" + str(globals.port))
             traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
             traversal_stub.SendData(traversal_pb2.SendDataRequest(
-                filebytes="mydata", request_id=request.request_id, client_node_ip=globals.my_ip))
+                file_bytes=str.encode("mydata"), request_id=request.request_id, client_node_ip=globals.my_ip))
 
             #    curr_data = fetch_data(request.hash_id)
             #    curr_mesh = self.create_logical_mesh()
