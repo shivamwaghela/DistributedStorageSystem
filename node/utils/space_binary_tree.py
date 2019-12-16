@@ -37,9 +37,7 @@ class SpaceBinaryTree:
         # If the key does not exist, then we create a new node and add
         # the list to a new node
         else:
-            self.sorted_dict[num_of_slots] = TreeNode(node_left=None,
-                                                      node_right=None,
-                                                      size=num_of_slots,
+            self.sorted_dict[num_of_slots] = TreeNode(size=num_of_slots,
                                                       free_pages=[[free_pages]])
 
     # else:
