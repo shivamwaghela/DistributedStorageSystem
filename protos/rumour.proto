@@ -23,9 +23,10 @@ message HeartBeatRequest{
     int32 heartbeatcount = 3;
     string wholemesh = 4;
     string heartbeatdict = 5;
+    string removednodes = 6;
 }
 message HeartBeatReply{
-
+    string removednodes = 1;
 }
 message MyDataRequest {
     string victim_ip = 1;

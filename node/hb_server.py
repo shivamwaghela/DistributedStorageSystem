@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 whole_mesh_dict = {}
 heartbeat_meta_dict = {}
+my_ip = ""
 
 def updatehearbeatdict(newnodeheartbeatdict):
     for node in newnodeheartbeatdict:
@@ -49,10 +50,19 @@ class RumourServicer(rumour_pb2_grpc.RumourServicer):
         if newnodemeshdict:
             updatemeshdict(newnodemeshdict)
 
-        return rumour_pb2.HeartBeatReply()
+        removednodes = []
+        print("..........", request)
+        src_removed_node_dict = eval(request.removednodes)
+        for key in src_removed_node_dict:
+            my_hb = heartbeat_meta_dict[key] if key in heartbeat_meta_dict else 0
+            if (heartbeat_meta_dict[my_ip] - my_hb >= 5):
+                removednodes.append(key)
+
+        return rumour_pb2.HeartBeatReply(removednodes=str(removednodes))
 
 def hb_serve():
     logger.info(globals.my_ip)
+    my_ip = globals.my_ip
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     rumour_pb2_grpc.add_RumourServicer_to_server(RumourServicer(), server)
     server.add_insecure_port('[::]:50051')

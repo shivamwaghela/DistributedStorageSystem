@@ -18,14 +18,30 @@ channels = []
 gossip_queue = deque()
 neighbour_dict = []
 suspended_nodes = []
+removed_nodes = []
+response_removed_nodes = {}
+
 def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
     channel = grpc.insecure_channel(server_ip + ':50051')
     rumour_stub = rumour_pb2_grpc.RumourStub(channel)
     mesh_dict = {}
+    removed_node_dict = []
     if action:
         mesh_dict = whole_mesh_dict
-    rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
-                                                    heartbeatdict=str(heartbeat_meta_dict)))
+
+    if len(removed_nodes) != 0:
+        removed_node_dict = removed_nodes
+
+    response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
+                                                    heartbeatdict=str(heartbeat_meta_dict), removednodes=str(removed_node_dict)))
+    ngbrremovednodes = eval(response.removednodes)
+    print("nggg...")
+    print(ngbrremovednodes)
+    for node in ngbrremovednodes:
+        if node in response_removed_nodes:
+            response_removed_nodes[node] += 1
+        else:
+            response_removed_nodes[node] = 0
 
 def markNodes(heartbeat_meta_dict):
     for node in heartbeat_meta_dict:
@@ -41,7 +57,7 @@ def hb_client():
     myheartbeatcount = 1
     whole_mesh_dict = hb_server.whole_mesh_dict
     heartbeat_meta_dict = hb_server.heartbeat_meta_dict
-    removed_nodes = []
+    
     while True:
         local_mesh = {}
         for item in globals.node_connections.connection_dict.items():
@@ -63,5 +79,16 @@ def hb_client():
 
         for neighbour in neighbour_dict:
             sendMsg(neighbour, action,whole_mesh_dict,heartbeat_meta_dict)
+
+        for key in response_removed_nodes:
+            if response_removed_nodes[key] == len(neighbour_dict):
+                print("Failed node...." + key)
+                # update logical mesh
+                # inform middleware
+                # remove channels
+                # remove node from heartbeatdict - initiate gossip !!
+        
+        removed_nodes = []
+        response_removed_nodes = {}
              
     print("Client started...")
