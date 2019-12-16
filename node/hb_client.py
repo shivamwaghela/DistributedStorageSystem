@@ -22,7 +22,7 @@ global removed_nodes
 removed_nodes = []
 response_removed_nodes = {}
 
-def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
+def sendMsg(server_ip, whole_mesh_dict, heartbeat_meta_dict):
     try:
         channel = grpc.insecure_channel(server_ip + ':50051')
         if grpc.channel_ready_future(channel) == grpc.ChannelConnectivity.READY:
@@ -121,7 +121,7 @@ def hb_client():
         while gossip_queue:
             element = gossip_queue.popleft()
             whole_mesh_dict[element["pos"]] = element["ip"]
-            action = "add"
+            # action = "add"
 
         myheartbeatcount = myheartbeatcount + 1
         print("my ip" + globals.my_ip)
@@ -129,7 +129,7 @@ def hb_client():
         markNodes(heartbeat_meta_dict)
 
         for neighbour in neighbour_dict:
-            sendMsg(neighbour, action,whole_mesh_dict,heartbeat_meta_dict)
+            sendMsg(neighbour,whole_mesh_dict,heartbeat_meta_dict)
 
         # if response_removed_nodes:
         #     for key in response_removed_nodes:
