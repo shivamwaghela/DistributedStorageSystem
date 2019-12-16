@@ -45,10 +45,11 @@ def serve():
 
 # XXX
 def send_request():
-    time.sleep(60)
+#    time.sleep(60)
     server_node_ip = "10.0.0.3"
     logger.info("Connecting to {} at port {}...".format(server_node_ip, globals.port))
-    traversal_stub = traversal_pb2_grpc.TraversalStub(globals.node_connections.connection_dict[NodePosition.RIGHT].channel)
+    channel = grpc.insecure_channel(server_node_ip + ":" + str(globals.port))
+    traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
     logger.debug(traversal_stub)
     response = traversal_stub.ReceiveData(
         traversal_pb2.ReceiveDataRequest(
@@ -80,8 +81,8 @@ if __name__ == "__main__":
         logger.debug("Starting server thread...")
         server_thread = threading.Thread(target=serve)
         server_thread.start()
-        #traversal_thread = threading.Thread(target=send_request)
-        #traversal_thread.start()
+        traversal_thread = threading.Thread(target=send_request)
+        traversal_thread.start()
         # pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
         # pulse_thread.start()
         server_thread.join()
@@ -94,8 +95,8 @@ if __name__ == "__main__":
         server_thread = threading.Thread(target=serve)
         # storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],))
         # XXX
-        #traversal_thread = threading.Thread(target=send_request)
-        #traversal_thread.start()
+        traversal_thread = threading.Thread(target=send_request)
+        traversal_thread.start()
 
         logger.debug("Starting client thread with target greet...")
         client_thread.start()
