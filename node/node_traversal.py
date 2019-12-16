@@ -8,11 +8,11 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 import globals
 import logging
 import random
-import traversal_response_status
 import traversal_pb2
 import traversal_pb2_grpc
 import threading
 
+from traversal_response_status import TraversalResponseStatus
 
 logger = logging.getLogger(__name__)
 gossip_dictionary = {"10.0.0.1": (0,0), "10.0.0.3": (0,2), "10.0.0.2": (0,1), "10.0.0.5": (1,2), "10.0.0.6": (1,0), "10.0.0.4": (1,1), "10.0.0.7": (2,1), "10.0.0.9": (2,0), "10.0.0.8": (2,2)}
@@ -31,7 +31,6 @@ def fetch_data(hash_id):
 # XXX
 class Traversal(traversal_pb2_grpc.TraversalServicer):
     def ReceiveData(self, request, context):
-        TraversalResponseStatus = traversal_response_status.TraversalResponseStatus
         logger.info("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
                     .format(request.hash_id, request.request_id, request.visited))
         print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
@@ -93,7 +92,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
     def RespondData(self, request, context):
         t = threading.Thread(target=self.forward_response_data, args=(request.file_bytes, request.request_id, request.node_ip, request.status, request.path))
         t.start()
-        return traversal_pb2.ResponseDataResponse(status = str(traversal_response_status.FORWARDED))
+        return traversal_pb2.ResponseDataResponse(status=TraversalResponseStatus.FORWARDED)
 
 
 
