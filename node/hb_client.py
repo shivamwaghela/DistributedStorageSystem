@@ -50,7 +50,7 @@ def markNodes(heartbeat_meta_dict):
     heartbeat_meta_dict = hb_server.heartbeat_meta_dict
     rell = []
     removed_nodes = []
-    
+
     for node in heartbeat_meta_dict:
         # print("in hbbb,,,,,")
         print(myheartbeatcount)
@@ -92,8 +92,10 @@ def hb_client():
         for item in globals.node_connections.connection_dict.items():
             if item[1].node_coordinates not in whole_mesh_dict:
                 gossip_queue.append({"ip":item[1].node_ip,"pos":item[1].node_coordinates})
+                heartbeat_meta_dict[item[1].node_ip] = myheartbeatcount
             if item[1].node_ip != globals.my_ip and item[1].node_ip not in neighbour_dict:
                 neighbour_dict.append(item[1].node_ip)
+
         print(neighbour_dict)
         time.sleep(5) 
         while gossip_queue:
