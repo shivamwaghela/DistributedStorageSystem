@@ -94,14 +94,20 @@ def hb_client():
                 print("response_rrrm..?C>w. ")
                 print(key)
                 print(response_removed_nodes[key])
+                rell = []
                 if response_removed_nodes[key] == len(neighbour_dict)-1:
                     print("Failed node...." + key)
                     for i in whole_mesh_dict:
                         if whole_mesh_dict[i] == key:
                             print("rremoving key......")
                             print(i)
+                            rell.append(i)
                             print(whole_mesh_dict[i])
-                            del whole_mesh_dict[i]
+
+                    for i in rell:
+                        del whole_mesh_dict[i]
+
+                    rell = []
                     # update logical mesh
                     # inform middleware
                     # remove channels
