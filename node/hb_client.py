@@ -53,7 +53,7 @@ def markNodes(heartbeat_meta_dict):
 
 
 def hb_client():
-    global myheartbeatcount
+    global myheartbeatcount, response_removed_nodes 
     myheartbeatcount = 1
     whole_mesh_dict = hb_server.whole_mesh_dict
     heartbeat_meta_dict = hb_server.heartbeat_meta_dict
@@ -80,13 +80,14 @@ def hb_client():
         for neighbour in neighbour_dict:
             sendMsg(neighbour, action,whole_mesh_dict,heartbeat_meta_dict)
 
-        for key in response_removed_nodes:
-            if response_removed_nodes[key] == len(neighbour_dict):
-                print("Failed node...." + key)
-                # update logical mesh
-                # inform middleware
-                # remove channels
-                # remove node from heartbeatdict - initiate gossip !!
+        if response_removed_nodes:
+            for key in response_removed_nodes:
+                if response_removed_nodes[key] == len(neighbour_dict):
+                    print("Failed node...." + key)
+                    # update logical mesh
+                    # inform middleware
+                    # remove channels
+                    # remove node from heartbeatdict - initiate gossip !!
         
         removed_nodes = []
         response_removed_nodes = {}
