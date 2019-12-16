@@ -183,6 +183,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         #     return file_bytes
         
         #get the channel through which the data will be propogated
+        channel = None
         for item in globals.node_connections.connection_dict.items():
             if item[1].node_coordinates == curr_coordinates:
                 channel = item[1].channel
