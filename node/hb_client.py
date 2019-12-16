@@ -18,6 +18,7 @@ channels = []
 gossip_queue = deque()
 neighbour_dict = []
 suspended_nodes = []
+global removed_nodes
 removed_nodes = []
 response_removed_nodes = {}
 
@@ -105,6 +106,8 @@ def hb_client():
                             print(whole_mesh_dict[i])
 
                     for i in rell:
+                        print("delerting.........")
+                        print(i)
                         del whole_mesh_dict[i]
 
                     rell = []
@@ -113,6 +116,7 @@ def hb_client():
                     # remove channels
                     # remove node from heartbeatdict - initiate gossip !!
         
+        global removed_nodes
         removed_nodes = []
         response_removed_nodes = {}
              
