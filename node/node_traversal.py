@@ -87,12 +87,14 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             thread.start()
             #thread.join()
 
-        return traversal_pb2.ReceiveDataResponse(status=TraversalResponseStatus.FORWARDED) # confirm indentation
+        return traversal_pb2.ReceiveDataResponse(
+            status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FORWARDED) # confirm indentation
 
     def RespondData(self, request, context):
         t = threading.Thread(target=self.forward_response_data, args=(request.file_bytes, request.request_id, request.node_ip, request.status, request.path))
         t.start()
-        return traversal_pb2.ResponseDataResponse(status=TraversalResponseStatus.FORWARDED)
+        return traversal_pb2.ResponseDataResponse(
+            status=traversal_pb2.ResponseDataResponse.TraversalResponseStatus.FORWARDED)
 
 
 

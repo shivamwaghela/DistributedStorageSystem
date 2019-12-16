@@ -15,7 +15,12 @@ message ReceiveDataRequest {
 }
 
 message ReceiveDataResponse {
-    string status = 1;
+    enum TraversalResponseStatus {
+        FOUND = 0;
+        FORWARDED = 1;
+        NOT_FOUND = 2;
+    }
+    TraversalResponseStatus status = 1;
 }
 
 message ResponseDataRequest {
