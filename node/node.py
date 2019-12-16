@@ -23,10 +23,7 @@ from client import Client
 from server import Greeter
 from network_manager import NetworkManager
 from node_traversal import Traversal
-from storage_manager import StorageManagerServer
 from pulse import Pulse
-
-storage_object = None
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
@@ -35,7 +32,7 @@ def serve():
     traversal_pb2_grpc.add_TraversalServicer_to_server(Traversal(), server)
     server.add_insecure_port("[::]:" + str(globals.port))
     logger.info("Server starting at port " + str(globals.port))
-    storage_pb2_grpc.add_FileServerServicer_to_server(storage_object, server)
+    storage_pb2_grpc.add_FileServerServicer_to_server(globals.storage_object, server)
     server.add_insecure_port("[::]:" + str(globals.port))
     logger.info("Server starting at port " + str(globals.port))
     server.start()
@@ -65,6 +62,8 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
+
+
     if len(sys.argv) == 3:
         logger.info("Starting first node of the network at position: ({},{})"
                     .format(sys.argv[1], sys.argv[2]))
@@ -74,9 +73,6 @@ if __name__ == "__main__":
                                      node_coordinates=my_node_coordinates, node_ip=globals.my_ip)
         globals.node_connections.add_connection(conn)
         logger.debug("NodeConnections.connection_dict: {}".format(globals.node_connections.connection_dict))
-
-        storage_object = StorageManagerServer(globals.initial_node_memory_size_bytes,
-                                              globals.initial_page_memory_size_bytes)
 
         logger.debug("Starting server thread...")
         server_thread = threading.Thread(target=serve)
@@ -93,7 +89,7 @@ if __name__ == "__main__":
 
         client_thread = threading.Thread(target=Client.greet, args=(sys.argv[1],))
         server_thread = threading.Thread(target=serve)
-        # storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],))
+        #storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],)) # for test only
         # XXX
         #traversal_thread = threading.Thread(target=ReceiveRequest, args=(request))
 
@@ -101,7 +97,7 @@ if __name__ == "__main__":
         client_thread.start()
         logger.debug("Starting server thread with target serve...")
 
-        # logger.debug("Starting storage thread with target storage...")
+        # logger.debug("Starting storage thread with target greet...")
         # storage_thread.start()
 
         server_thread.start()
