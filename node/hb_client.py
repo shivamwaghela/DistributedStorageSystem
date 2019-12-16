@@ -102,11 +102,11 @@ def markNodes(heartbeat_meta_dict):
 
 
 def hb_client():
-    global myheartbeatcount, response_removed_nodes 
+    global myheartbeatcount, response_removed_nodes
     myheartbeatcount = 1
     whole_mesh_dict = hb_server.whole_mesh_dict
     heartbeat_meta_dict = hb_server.heartbeat_meta_dict
-    
+    heartbeat_meta_dict[globals.my_ip] = myheartbeatcount
     while True:
         time.sleep(5) 
         local_mesh = {}
