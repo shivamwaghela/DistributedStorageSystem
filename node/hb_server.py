@@ -56,7 +56,8 @@ class RumourServicer(rumour_pb2_grpc.RumourServicer):
         src_removed_node_dict = eval(request.removednodes)
         for key in src_removed_node_dict:
             print("key in h  server......" + key)
-            print("hb meta ....." + heartbeat_meta_dict[key])
+            print("hb meta ....."  )
+            print(heartbeat_meta_dict[key])
             my_hb = heartbeat_meta_dict[key] if key in heartbeat_meta_dict else 0
             if (heartbeat_meta_dict[my_ip] - my_hb >= 5):
                 removednodes.append(key)
