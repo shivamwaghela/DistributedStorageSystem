@@ -124,7 +124,7 @@ def hb_client():
         if globals.my_ip in heartbeat_meta_dict:
             myheartbeatcount = heartbeat_meta_dict[globals.my_ip]+1
         else:
-        myheartbeatcount = myheartbeatcount + 1
+            myheartbeatcount = myheartbeatcount + 1
         print("my ip" + globals.my_ip)
         heartbeat_meta_dict[globals.my_ip] = myheartbeatcount
         markNodes(heartbeat_meta_dict)
