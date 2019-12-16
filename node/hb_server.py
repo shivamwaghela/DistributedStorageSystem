@@ -65,11 +65,14 @@ class RumourServicer(rumour_pb2_grpc.RumourServicer):
         return rumour_pb2.HeartBeatReply(removednodes=str(removednodes))
 
 def hb_serve():
-    logger.info(globals.my_ip)
-    my_ip = globals.my_ip
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    rumour_pb2_grpc.add_RumourServicer_to_server(RumourServicer(), server)
-    server.add_insecure_port('[::]:50051')
-    server.start()
-    print("Server starting...")
-    server.wait_for_termination()
+    try: 
+        logger.info(globals.my_ip)
+        my_ip = globals.my_ip
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        rumour_pb2_grpc.add_RumourServicer_to_server(RumourServicer(), server)
+        server.add_insecure_port('[::]:50051')
+        server.start()
+        print("Server starting...")
+        server.wait_for_termination()
+    catch Exception as e:
+        print("in exception")
