@@ -3,8 +3,9 @@ syntax = "proto3";
 package traversal;
 
 service Traversal {
-    rpc ReceiveData (ReceiveDataRequest) returns (ReceiveDataResponse);
+    rpc ReceiveData (ReceiveDataRequest) returns (stream ReceiveDataResponse);
     rpc RespondData (ResponseDataRequest) returns (ResponseDataResponse);
+    rpc SendData (stream SendDataRequest) returns (SendDataResponse);
 }
 
 message ReceiveDataRequest {
@@ -12,10 +13,17 @@ message ReceiveDataRequest {
     string request_id = 2;
     string stack = 3;
     string visited = 4;
+    string requesting_node_ip = 5;
 }
 
 message ReceiveDataResponse {
-    string status = 1;
+    enum TraversalResponseStatus {
+        FOUND = 0;
+        FORWARDED = 1;
+        NOT_FOUND = 2;
+    }
+    TraversalResponseStatus status = 1;
+    bytes file_bytes = 2;
 }
 
 message ResponseDataRequest {
@@ -27,5 +35,19 @@ message ResponseDataRequest {
 }
 
 message ResponseDataResponse {
-    string status = 1;
+    enum TraversalResponseStatus {
+        FOUND = 0;
+        FORWARDED = 1;
+        NOT_FOUND = 2;
+    }
+    TraversalResponseStatus status = 1;
+}
+
+message SendDataRequest {
+    bytes file_bytes = 1;
+    string request_id = 2;
+    string client_node_ip = 3;
+}
+
+message SendDataResponse {
 }

@@ -23,7 +23,9 @@ from client import Client
 from server import Greeter
 from network_manager import NetworkManager
 from node_traversal import Traversal
+from storage_manager import StorageManagerServer
 from pulse import Pulse
+
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=50))
@@ -41,10 +43,11 @@ def serve():
 
 # XXX
 def send_request():
-    time.sleep(10)
-    server_node_ip = "10.0.0.3"
+#    time.sleep(60)
+    server_node_ip = "10.0.0.1"
     logger.info("Connecting to {} at port {}...".format(server_node_ip, globals.port))
-    traversal_stub = traversal_pb2_grpc.TraversalStub(globals.node_connections.connection_dict[NodePosition.RIGHT].channel)
+    channel = grpc.insecure_channel(server_node_ip + ":" + str(globals.port))
+    traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
     logger.debug(traversal_stub)
     response = traversal_stub.ReceiveData(
         traversal_pb2.ReceiveDataRequest(
@@ -77,8 +80,8 @@ if __name__ == "__main__":
         server_thread.start()
         # traversal_thread = threading.Thread(target=send_request)
         # traversal_thread.start()
-        pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
-        pulse_thread.start()
+        # pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
+        # pulse_thread.start()
         server_thread.join()
     else:
         if len(sys.argv) != 2:
@@ -90,7 +93,8 @@ if __name__ == "__main__":
         # for testing storage client only
         #storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],))
         # XXX
-        #traversal_thread = threading.Thread(target=ReceiveRequest, args=(request))
+        # traversal_thread = threading.Thread(target=send_request)
+        # traversal_thread.start()
 
         logger.debug("Starting client thread with target greet...")
         client_thread.start()
@@ -101,7 +105,7 @@ if __name__ == "__main__":
 
         server_thread.start()
 
-        pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
-        pulse_thread.start()
+        # pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
+        # pulse_thread.start()
 
         server_thread.join()
