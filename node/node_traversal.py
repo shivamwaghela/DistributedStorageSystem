@@ -64,18 +64,18 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                 print("Node IP: {}".format(item[1].node_ip))
                 print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
                     .format(request.hash_id, request.request_id, request.visited))
-                neighbor_list.append(item)
+                neighbor_list.append(item[1])
 
         forward_list = []
 
         for item in neighbor_list:
-            if item not in visited:
-                visited.append(item)
+            if item.node_ip not in visited:
+                visited.append(item.node_ip)
                 forward_list.append(item)
 
-        print("Forwarded List: {}".foramt(forward_list))
-        print("Neighbor List: {}".foramt(neighbor_list))
-        print("Visited List: {}".foramt(visited))
+        print("Forwarded List: {}".format(forward_list))
+        print("Neighbor List: {}".format(neighbor_list))
+        print("Visited List: {}".format(visited))
         threading_list = []
         for item in forward_list:
             forwarded_node_ip = item.node_ip #confirm
