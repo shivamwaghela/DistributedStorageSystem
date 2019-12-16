@@ -73,9 +73,9 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                 visited.append(item)
                 forward_list.append(item)
 
-        print("Forwarded List: {}".foramt(forward_list))
-        print("Neighbor List: {}".foramt(neighbor_list))
-        print("Visited List: {}".foramt(visited))
+        print("Forwarded List: {}".format(forward_list))
+        print("Neighbor List: {}".format(neighbor_list))
+        print("Visited List: {}".format(visited))
         threading_list = []
         for item in forward_list:
             forwarded_node_ip = item.node_ip #confirm

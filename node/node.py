@@ -45,7 +45,7 @@ def serve():
 
 # XXX
 def send_request():
-    time.sleep(20)
+    time.sleep(60)
     server_node_ip = "10.0.0.3"
     logger.info("Connecting to {} at port {}...".format(server_node_ip, globals.port))
     traversal_stub = traversal_pb2_grpc.TraversalStub(globals.node_connections.connection_dict[NodePosition.RIGHT].channel)
