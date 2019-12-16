@@ -24,25 +24,24 @@ response_removed_nodes = {}
 
 def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
     try:
-        with globals.lock:
-            channel = grpc.insecure_channel(server_ip + ':50051')
-            if grpc.channel_ready_future(channel) == grpc.ChannelConnectivity.READY:
-                print("yes connected")
-            else:
-                print("gone down for"+server_ip)
-                print(grpc.ChannelConnectivity)
-            rumour_stub = rumour_pb2_grpc.RumourStub(channel)
-            mesh_dict = {}
-            removed_node_dict = []
-            if action:
-                mesh_dict = whole_mesh_dict
+        channel = grpc.insecure_channel(server_ip + ':50051')
+        if grpc.channel_ready_future(channel) == grpc.ChannelConnectivity.READY:
+            print("yes connected")
+        else:
+            print("gone down for"+server_ip)
+            print(grpc.ChannelConnectivity)
+        rumour_stub = rumour_pb2_grpc.RumourStub(channel)
+        mesh_dict = {}
+        removed_node_dict = []
+        if action:
+            mesh_dict = whole_mesh_dict
 
-            # if len(removed_nodes) != 0:
-            #     removed_node_dict = removed_nodes
+        # if len(removed_nodes) != 0:
+        #     removed_node_dict = removed_nodes
 
-            response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
-                                                            heartbeatdict=str(heartbeat_meta_dict), removednodes=str(removed_node_dict)))
-            
+        response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
+                                                        heartbeatdict=str(heartbeat_meta_dict), removednodes=str(removed_node_dict)))
+        
             #channel.close()
     except Exception as e:
         print("in client exception")
@@ -83,15 +82,13 @@ def markNodes(heartbeat_meta_dict):
             for i in rell:
                 print("deleting from whole mesh.........")
                 print(i)
-                with globals.lock:
-                    if (i in hb_server.whole_mesh_dict):
-                        del hb_server.whole_mesh_dict[i]
+                if (i in hb_server.whole_mesh_dict):
+                    del hb_server.whole_mesh_dict[i]
 
     for i in removed_nodes:
-        print("deleting from hb....")
-        with globals.lock:
-            if i in hb_server.heartbeat_meta_dict:
-                del hb_server.heartbeat_meta_dict[i]
+        print("deleting from hb....")       
+        if i in hb_server.heartbeat_meta_dict:
+            del hb_server.heartbeat_meta_dict[i]
 
     for i in removed_nodes:
         for item in list(globals.node_connections.connection_dict.items()):
