@@ -3,9 +3,9 @@ syntax = "proto3";
 package traversal;
 
 service Traversal {
-    rpc ReceiveData (ReceiveDataRequest) returns (ReceiveDataResponse);
+    rpc ReceiveData (ReceiveDataRequest) returns (stream ReceiveDataResponse);
     rpc RespondData (ResponseDataRequest) returns (ResponseDataResponse);
-    rpc SendData (SendDataRequest) returns (SendDataResponse);
+    rpc SendData (stream SendDataRequest) returns (SendDataResponse);
 }
 
 message ReceiveDataRequest {
