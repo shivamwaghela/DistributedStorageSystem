@@ -90,6 +90,12 @@ def markNodes(heartbeat_meta_dict):
         with globals.lock:
             if i in hb_server.heartbeat_meta_dict:
                 del hb_server.heartbeat_meta_dict[i]
+
+    for i in removed_nodes:
+        for item in list(globals.node_connections.connection_dict.items()):
+            if (item[1].node_ip == i):
+                globals.node_connections.remove_connection(item[0])
+        
         
     # print("....mk...")
     # print(removed_nodes)
