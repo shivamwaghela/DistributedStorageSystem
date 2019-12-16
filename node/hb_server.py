@@ -51,6 +51,7 @@ class RumourServicer(rumour_pb2_grpc.RumourServicer):
             updatemeshdict(newnodemeshdict)
 
         removednodes = []
+        my_ip = globals.my_ip
         print("..........", request)
         src_removed_node_dict = eval(request.removednodes)
         for key in src_removed_node_dict:
