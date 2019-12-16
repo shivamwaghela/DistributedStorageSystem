@@ -38,12 +38,12 @@ def markNodes(heartbeat_meta_dict):
         #     suspended_nodes.append(node)
         if (myheartbeatcount-heartbeat_meta_dict[node]) >= 5:
             #removed_nodes.append(node)
-            for i in whole_mesh_dict:
-                if whole_mesh_dict[i] == node:
+            for i in hb_server.whole_mesh_dict:
+                if hb_server.whole_mesh_dict[i] == node:
                     ll_nodes.append(i)
     
     for i in ll_nodes:
-        del whole_mesh_dict[i]
+        del hb_server.whole_mesh_dict[i]
 
 
 def hb_client():
