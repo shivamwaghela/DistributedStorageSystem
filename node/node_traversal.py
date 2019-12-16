@@ -10,8 +10,10 @@ import logging
 import random
 import traversal_pb2
 import traversal_pb2_grpc
+import time
 import threading
 from queue import *
+import grpc
 
 from traversal_response_status import TraversalResponseStatus
 
@@ -59,30 +61,31 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         data_found = False
         # Check if the file exits on current node
         if data_found:
-           curr_data = fetch_data(request.hash_id)
-           curr_mesh = self.create_logical_mesh()
-           curr_path = self.find_shortest_path(curr_mesh)
-           self.forward_response_data(curr_data, request.request_id, "", traversal_response_status.FOUND,
-                                      curr_path)
-        #    RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
-           return traversal_pb2.ReceiveDataResponse(status = str(traversal_response_status.FOUND))
+            channel = grpc.insecure_channel(request.requesting_node_ip + ":" + str(globals.port))
+            traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
+            traversal_stub.SendData(traversal_pb2.SendDataRequest(
+                filebytes="mydata", request_id=request.request_id, client_node_ip=globals.my_ip))
+
+            #    curr_data = fetch_data(request.hash_id)
+            #    curr_mesh = self.create_logical_mesh()
+            #    curr_path = self.find_shortest_path(curr_mesh)
+            #    self.forward_response_data(curr_data, request.request_id, "", traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND,
+            #                               curr_path)
+            # #    RespondData(file_bytes=curr_data, request_id=request.request_id, node_ip = request.node_ip, status = traversal_response_status.FOUND, path = curr_path)
+            #    return traversal_pb2.ReceiveDataResponse(status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND)
 
         # If file not found in node
-        # add neighbors to stack. before adding check if neighbor is already visited.
         visited_ip = eval(request.visited)
-        
+
+        globals.data_received_event.clear()
+
         if globals.my_ip not in visited_ip:
             visited_ip.append(globals.my_ip)
 
         logger.info("Traversal.ReceiveData: visited: {}".format(visited_ip))
-        #print(visited_ip)
-
         neighbor_conn_list = []
 
         for item in globals.node_connections.connection_dict.items():
-        #   print("Node IP: {}".format(item[1].node_ip))
-        #    print("Traversal.ReceiveData hash_id:{} request_id:{} visited:{}"
-        #            .format(request.hash_id, request.request_id, request.visited))
             neighbor_conn_list.append(item[1])
 
         forward_conn_list = []
@@ -109,16 +112,26 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
             logger.debug("Forwarded Node IP: {}".format(forward_node_ip))
         #    print("Channel: {}".format(channel))
             forward_request_thread = threading.Thread(target=self.forward_receive_data_request,
-                                                      args=(forward_node_ip, channel, request, visited_ip))
+                                                      args=(forward_node_ip, channel, request, visited_ip,
+                                                            request.requesting_node_ip))
             threading_list.append(forward_request_thread)
 
         for thread in threading_list:
             thread.start()
             #thread.join()
 
+        while not globals.data_received_event.is_set():
+            # wait for data
+            time.sleep(0.1)
+
+
+       # return traversal_pb2.ReceiveDataResponse(
+       #     status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FORWARDED) # confirm indentation
+
+        logger.debug("Response: {}".format(globals.data_received))
         logger.debug("Return")
         return traversal_pb2.ReceiveDataResponse(
-            status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FORWARDED) # confirm indentation
+             status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND)
 
     def RespondData(self, request, context):
         t = threading.Thread(target=self.forward_response_data, args=(request.file_bytes, request.request_id, request.node_ip, request.status, request.path))
@@ -129,7 +142,7 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
 
 
     #XXX
-    def forward_receive_data_request(self, node_ip, channel, request, visited_ip):
+    def forward_receive_data_request(self, node_ip, channel, request, visited_ip, requesting_node_ip):
         logger.info("forward_receive_data_request: node_ip: {}".format(node_ip))
 
         traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
@@ -138,7 +151,8 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
                                 hash_id=str(request.hash_id),
                                 request_id=str(request.request_id),
                                 stack="",
-                                visited=str(visited_ip)))
+                                visited=str(visited_ip),
+                                requesting_node_ip=requesting_node_ip))
         logger.info("forward_receive_data_request: response: {}".format(response))
         return response
 
@@ -293,3 +307,17 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         path.append(co_ords)
         return path
     # print("{", node.x, node.y, "}")
+
+    def SendData(self, request, context):
+        logger.info("SendData invoked from {}".format(request.client_node_ip))
+        logger.debug("filebytes {}, request_id {}, client_node_ip {}".format(request.filebytes, request.request_id,
+                                                                             request.client_node_ip))
+
+        globals.data_received = request.filebytes
+
+        globals.data_received_event.set()
+
+        logger.info("Event set {}".format(globals.data_received))
+
+        return traversal_pb2.SendDataResponse()
+
