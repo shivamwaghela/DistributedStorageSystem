@@ -23,21 +23,24 @@ removed_nodes = []
 response_removed_nodes = {}
 
 def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
-    with globals.lock:
-        channel = grpc.insecure_channel(server_ip + ':50051')
-        rumour_stub = rumour_pb2_grpc.RumourStub(channel)
-        mesh_dict = {}
-        removed_node_dict = []
-        if action:
-            mesh_dict = whole_mesh_dict
+    try:
+        with globals.lock:
+            channel = grpc.insecure_channel(server_ip + ':50051')
+            rumour_stub = rumour_pb2_grpc.RumourStub(channel)
+            mesh_dict = {}
+            removed_node_dict = []
+            if action:
+                mesh_dict = whole_mesh_dict
 
-        # if len(removed_nodes) != 0:
-        #     removed_node_dict = removed_nodes
+            # if len(removed_nodes) != 0:
+            #     removed_node_dict = removed_nodes
 
-        response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
-                                                        heartbeatdict=str(heartbeat_meta_dict), removednodes=str(removed_node_dict)))
-        
-        channel.close()
+            response = rumour_stub.sendheartbeat(rumour_pb2.HeartBeatRequest(ip=my_ip, pos=my_pos, heartbeatcount=myheartbeatcount, wholemesh=str(mesh_dict),
+                                                            heartbeatdict=str(heartbeat_meta_dict), removednodes=str(removed_node_dict)))
+            
+            channel.close()
+    except Exception as e:
+        print("in client exception")
     # ngbrremovednodes = eval(response.removednodes)
     # print("nggg...")
     # print(ngbrremovednodes)
