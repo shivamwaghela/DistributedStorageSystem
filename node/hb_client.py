@@ -30,6 +30,7 @@ def sendMsg(server_ip, action, whole_mesh_dict, heartbeat_meta_dict):
                 print("yes connected")
             else:
                 print("gone down for"+server_ip)
+                print(grpc.ChannelConnectivity)
             rumour_stub = rumour_pb2_grpc.RumourStub(channel)
             mesh_dict = {}
             removed_node_dict = []
