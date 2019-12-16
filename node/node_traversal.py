@@ -63,11 +63,11 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         if data_found:
             for item in gossip_dictionary:
                 if gossip_dictionary[item] == request.requesting_node_ip:
-                    destination_x = item[0]-10
-                    destination_y = item[1]-10
+                    destination_x = item[0]
+                    destination_y = item[1]
                     break
-            source_x = globals.my_coordinates[0]-10
-            source_y = globals.my_coordinates[1]-10
+            source_x = globals.my_coordinates[0]
+            source_y = globals.my_coordinates[1]
 
             print("Source x: {}".format(source_x))
             print("Source y: {}".format(source_y))
