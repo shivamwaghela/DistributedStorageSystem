@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
+DEBUG = 0
+PRINT_LIST_BREAK = 5
+
 class TreeNode:
     node_left = None
     node_right= None
@@ -24,11 +27,31 @@ class TreeNode:
         return self.free_pages
 
     def get_free_pages(self):
+        if DEBUG:
+            print("[Tree Node] inside get_free_pages")
+            print("[Tree Node] lenght of the firts value of free pages: {}". format(len(self.free_pages)))
+            if len(self.free_pages[0]) < 5:
+                print("[Tree Node] content of free pages first element{}".format(self.free_pages))
+
         if self.is_node_empty():
             return []
         else:
-            ret_val = self.free_pages.pop()[0]
+            ret_val = self.free_pages.pop()
+            if DEBUG:
+                if isinstance(ret_val, list):
+                    for i, index in enumerate(ret_val):
+                        if isinstance(ret_val[i], list):
+                            print("[memory manager] this should not be a list")
+                            print("[memory manager] first element is : {}".format(ret_val[i][0]))
+                            break
+                        print("[Tree Node] return object : {}".format(ret_val[i]))
+                        if i >= PRINT_LIST_BREAK:
+                            break
+                else:
+                    print("[Tree Node] return value is not a list!!!!!!!!")
+                    print("[Tree Node] return value is = {}".format(ret_val))
             return ret_val
+
 
     def is_node_empty(self):
         if self.free_pages == []:

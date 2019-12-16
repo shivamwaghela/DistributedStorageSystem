@@ -13,9 +13,10 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 from page import Page
 from space_binary_tree import SpaceBinaryTree
 
-DEBUG = 1
+DEBUG = 0
 ADD = "add"
 REMOVE = "remove"
+PRINT_LIST_BREAK = 5
 
 class MemoryManager:
     '''
@@ -83,6 +84,15 @@ class MemoryManager:
         target_list_indexes = self.find_n_available_pages(pages_needed)
 
         if DEBUG:
+            for i, index in enumerate(target_list_indexes):
+                if isinstance(target_list_indexes[i], list):
+                    print("[memory manager] this should not be a list")
+                    print("[memory manager] first element is : {}".format(target_list_indexes[i][0]))
+                    break
+
+                print("[memory manager] target list of indexes : {}".format(target_list_indexes[index]))
+                if i >= PRINT_LIST_BREAK:
+                    break
             total_find_pages_time = round(time.time() - start_find_pages_time, 6)
             print("[memory manager] total time getting pages: {}".format(total_find_pages_time))
 
@@ -118,9 +128,12 @@ class MemoryManager:
         # self.list_of_pages_used.extend.(target_list_indexes)
         # update memory dic
         self.memory_tracker[hash_id] = target_list_indexes
-        self.logger.info("Successfully saved the data in %s pages. Bytes written: %s. Took %s seconds." %
+        if DEBUG:
+            self.logger.info("Successfully saved the data in %s pages. Bytes written: %s. Took %s seconds." %
               (pages_needed, pages_needed * self.page_size, total_time_write_data))
-        self.logger.info("Free pages left: %s. Bytes left: %s" % (self.get_number_of_pages_available(), self.get_available_memory_bytes()))
+            self.logger.info("Free pages left: %s. Bytes left: %s" % (self.get_number_of_pages_available(),
+                                                                      self.get_available_memory_bytes()))
+
         return True
 
     # def get_number_of_pages_needed(self, chunk_size, data_size):
@@ -169,8 +182,6 @@ class MemoryManager:
 
     # this function is very slow, we need to improve it. (This will use a tree)
     def find_n_available_pages(self, n):
-
-
         self.logger.info("Looking for %s available pages... " % n)
         start = time.time()
         list_indexes_to_used = self.pages_free.get_available_space(n)
@@ -189,13 +200,22 @@ class MemoryManager:
         :return:
         '''
         # find the data from the memory storage
-
+        if DEBUG:
+            print("[memory manager] Entering the delete data function")
         #get the list of pages used
-        old_pages_list = self.memory_tracker[hash_id]
+        old_pages_list = self.memory_tracker.pop(hash_id)
+        if DEBUG:
+            print("[memory manager] getting old pages list: {}".format(old_pages_list))
+            print("[memory manager] len of list to remove: {}".format(len(old_pages_list)))
+
         #add pages to the free pages structure
-        self.pages_free.set_empty_space(num_of_slots=len(old_pages_list), free_pages=old_pages_list)
+        self.pages_free.set_empty_space(len(old_pages_list),old_pages_list)
+
+        if DEBUG:
+            print("[memory manager] called set_empty_space | num_of slots: {}, free_pages: {}".format(len(old_pages_list),
+                                                                                                  old_pages_list))
         #delete the memory tracker
-        del self.memory_tracker[hash_id]  # delete the mapping
+        # del self.memory_tracker[hash_id]  # delete the mapping
         # self.list_of_pages_used = [x for x in self.list_of_pages_used if x not in old_pages_list]
         # we may also need to delete the data from the actual Pages() in list_of_all_pages
         self.logger.info("Successfully deleted hash_id: %s." % hash_id)
