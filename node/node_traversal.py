@@ -19,7 +19,7 @@ from traversal_response_status import TraversalResponseStatus
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-gossip_dictionary = {"10.0.0.3": (10,10), "10.0.0.10": (10,11), "10.0.0.4": (11,10), "10.0.0.31": (11,11), "10.0.0.32": (12,11)}
+gossip_dictionary = {(10,10): "10.0.0.1", (10,11): "10.0.0.10", (11,11): "10.0.0.31", "10.0.0.32": (11,10), "10.0.0.4": (11,9)}
 q = PriorityQueue()
 
 # up, left, right, down movements
@@ -193,20 +193,20 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
 
     #creating a 2D matrix to keep track of live and dead nodes
     def create_logical_mesh(self):
-        min_row = list(gossip_dictionary.values())[0][0]
-        min_col = list(gossip_dictionary.values())[0][1]
-        max_row = list(gossip_dictionary.values())[len(gossip_dictionary)-1][0]
-        max_col = list(gossip_dictionary.values())[len(gossip_dictionary)-1][1]
+        min_row = list(gossip_dictionary.keys())[0][0]
+        min_col = list(gossip_dictionary.keys())[0][1]
+        max_row = list(gossip_dictionary.keys())[len(gossip_dictionary)-1][0]
+        max_col = list(gossip_dictionary.keys())[len(gossip_dictionary)-1][1]
 
         for key in gossip_dictionary:
-            if gossip_dictionary[key][0] < min_row:
-                min_row = gossip_dictionary[key][0]
-            if gossip_dictionary[key][1] < min_col:
-                min_col = gossip_dictionary[key][1]
-            if gossip_dictionary[key][0] > max_row:
-                max_row = gossip_dictionary[key][0]
-            if gossip_dictionary[key][1] > max_col:
-                max_col = gossip_dictionary[key][1]
+            if key[0] < min_row:
+                min_row = key[0]
+            if key[1] < min_col:
+                min_col = key[1]
+            if key[0] > max_row:
+                max_row = key[0]
+            if key[1] > max_col:
+                max_col = key[1]
 
         cols = max_col - min_col + 1
         rows = max_row - min_col + 1
