@@ -1,11 +1,11 @@
 import json
 import socket
-
+import globals
 def start_replica():
     # get node self IP
-    serverAddressPort = ("EDIT_IP", 21000)
+    serverAddressPort = (globals.my_ip, 21000)
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     print(serverAddressPort)
     dict = {}
-    message = json.dumps({"IPaddress": "<EDIT_IP>", "gossip": False, "Dictionary": dict, "BlackListedNodes": []})
+    message = json.dumps({"IPaddress": globals.my_ip, "gossip": False, "Dictionary": dict, "BlackListedNodes": []})
     UDPClientSocket.sendto(message.encode(), serverAddressPort)

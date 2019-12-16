@@ -8,6 +8,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 
 import replication_pb2
 import replication_pb2_grpc
+import globals
 
 class ReplicationService(replication_pb2_grpc.FileserviceServicer):
 
@@ -33,24 +34,29 @@ class ReplicationService(replication_pb2_grpc.FileserviceServicer):
             ('key-is-replica', str(is_replica))
         )
 
-        print("request =", request.shortest_path[request.currentpos])
-        if request.currentpos == len(request.shortest_path) - 1:
+        print("request = ", request.shortest_path[request.currentpos])
+        if request.currentpos == len(request.shortest_path):
             #cache.saveVClock(str(request), str(request))
             #write_to_memory
             return replication_pb2.ack(success=True, message="Data Replicated.")
         else:
             forward_coordinates = request.shortest_path[request.currentpos]
             print("forward coord =", forward_coordinates)
-            forward_server_addr = self.getneighbordata(forward_coordinates)
+            list_of_neigbors = {}
+            for item in globals.node_connections.connection_dict.items():
+                if item[1].node_ip != globals.my_ip and item[1].node_ip not in list_of_neigbors:
+                    list_of_neigbors[str(item[1].node_coordinates)] = item[1].node_ip
+            print(list_of_neigbors)
+            print(list_of_neigbors[str(forward_coordinates)])
+            forward_server_addr = list_of_neigbors[forward_coordinates]
             print("forward IP =", forward_server_addr)
-            forward_port = 50051
+            forward_port = globals.port
             forward_channel = grpc.insecure_channel(forward_server_addr + ":" + str(forward_port))
             forward_stub = replication_pb2_grpc.FileserviceStub(forward_channel)
             request.currentpos += 1
             updated_request = replication_pb2.FileData(initialReplicaServer=request.initialReplicaServer,
                                                bytearray=request.bytearray,
-                                               vClock=request.vClock, shortest_path=request.shortest_path, currentpos=request.currentpos + 1,
-                                               fileMetaData=request.fileMetaData)
+                                               vClock=request.vClock, shortest_path=request.shortest_path, currentpos=request.currentpos + 1)
 
             forward_resp = forward_stub.ReplicateFile(updated_request, metadata = metadata)
             print("forward_resp", forward_resp)
