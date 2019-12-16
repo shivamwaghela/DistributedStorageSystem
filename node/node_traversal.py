@@ -19,7 +19,7 @@ from traversal_response_status import TraversalResponseStatus
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-gossip_dictionary = {(10,10): "10.0.0.1", (10,11): "10.0.0.10", (11,11): "10.0.0.31", (11,10): "10.0.0.4"}
+gossip_dictionary = {(10,10): "10.0.0.1", (10,11): "10.0.0.8", (11,11): "10.0.0.31", (11,10): "10.0.0.3"}
 q = PriorityQueue()
 
 # up, left, right, down movements
