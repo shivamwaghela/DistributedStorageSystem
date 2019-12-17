@@ -49,7 +49,7 @@ def hb_client():
                 gossip_queue.append({"ip":item[1].node_ip,"pos":item[1].node_coordinates})
             if item[1].node_ip != globals.my_ip and item[1].node_ip not in neighbour_dict:
                 neighbour_dict.append(item[1].node_ip)
-        print(neighbour_dict)
+        #print(neighbour_dict)
         time.sleep(5) 
         while gossip_queue:
             element = gossip_queue.popleft()
@@ -57,7 +57,7 @@ def hb_client():
             action = "add"
 
         myheartbeatcount = myheartbeatcount + 1
-        print("my ip" + globals.my_ip)
+        #print("my ip" + globals.my_ip)
         heartbeat_meta_dict[globals.my_ip] = myheartbeatcount
         markNodes(heartbeat_meta_dict)
 

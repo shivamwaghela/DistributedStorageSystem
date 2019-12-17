@@ -25,8 +25,8 @@ def updatehearbeatdict(newnodeheartbeatdict):
             heartbeat_meta_dict[node] = newnodeheartbeatdict[node]
 
 def updatemeshdict(newnodemeshdict):
-    print("new node mesh....")
-    print(newnodemeshdict)
+    #print("new node mesh....")
+    #print(newnodemeshdict)
     for node in newnodemeshdict:
         if node not in whole_mesh_dict:
             whole_mesh_dict[node] = newnodemeshdict[node]
