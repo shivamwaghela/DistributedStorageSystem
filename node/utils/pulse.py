@@ -37,6 +37,7 @@ class Pulse:
 
                 if tries == 3:
                     logger.info("Removing {} from the network".format(item[1].node_ip))
+                    globals.whole_mesh_dict.remove(item[1].node_position)
                     globals.node_connections.remove_connection(item[0])
 
             time.sleep(1)

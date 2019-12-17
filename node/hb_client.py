@@ -51,6 +51,7 @@ def hb_client():
         for item in globals.node_connections.connection_dict.items():
             if item[1].node_coordinates not in whole_mesh_dict:
                 gossip_queue.append({"ip":item[1].node_ip,"pos":item[1].node_coordinates})
+                heartbeat_meta_dict[item[1].node_ip] = heartbeat_meta_dict[globals.my_ip]
             if item[1].node_ip != globals.my_ip and item[1].node_ip not in neighbour_dict:
                 neighbour_dict.append(item[1].node_ip)
         print(neighbour_dict)
@@ -63,7 +64,7 @@ def hb_client():
         myheartbeatcount = myheartbeatcount + 1
         print("my ip" + globals.my_ip)
         heartbeat_meta_dict[globals.my_ip] = myheartbeatcount
-        markNodes(heartbeat_meta_dict)
+        #markNodes(heartbeat_meta_dict)
 
         for neighbour in neighbour_dict:
             sendMsg(neighbour, action,whole_mesh_dict,heartbeat_meta_dict)
