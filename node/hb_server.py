@@ -25,8 +25,8 @@ def updatehearbeatdict(newnodeheartbeatdict):
             heartbeat_meta_dict[node] = newnodeheartbeatdict[node]
 
 def updatemeshdict(newnodemeshdict):
-    print("new node mesh....")
-    print(newnodemeshdict)
+    #print("new node mesh....")
+    #print(newnodemeshdict)
     for node in newnodemeshdict:
         if node not in whole_mesh_dict:
             whole_mesh_dict[node] = newnodemeshdict[node]
@@ -36,7 +36,7 @@ def updatemeshdict(newnodemeshdict):
 
 class RumourServicer(rumour_pb2_grpc.RumourServicer):
     def sendheartbeat (self, request, context):
-        print("in receive", request)
+        #print("in receive", request)
         response = request #fetch request here
         if  response.pos in whole_mesh_dict and response.ip != whole_mesh_dict[response.pos]:
             heartbeat_meta_dict.remove(response.pos+"-"+whole_mesh_dict[response.pos])
