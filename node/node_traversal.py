@@ -64,11 +64,12 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         if data_found:
             channel = grpc.insecure_channel(request.requesting_node_ip + ":" + str(globals.port))
             traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
-            data_received = globals.storage_object.download_list_of_data_chunks_non_rpc(request.hash_id)
-           # for chunk in data_received1:
-            logger.debug("SendData: chunk: {}".format(data_received))
-            return traversal_stub.SendData(traversal_pb2.SendDataRequest(
-                    file_bytes=str.encode("chunk"),
+            chunks_list = globals.storage_object.download_list_of_data_chunks_non_rpc(request.hash_id)
+            logger.debug("SendData: chunk: {}".format(chunks_list))
+
+            for c in chunks_list:
+                yield traversal_stub.SendData(traversal_pb2.SendDataRequest(
+                    file_bytes=c,
                     request_id=request.request_id, client_node_ip=globals.my_ip))
 
             #    curr_data = fetch_data(request.hash_id)
@@ -136,9 +137,10 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         logger.debug("Response: {}".format(globals.data_received))
         logger.debug("Return")
         #for chunk in globals.data_received:
-        logger.debug("ReceiveDataRespnse: chunk: {}".format(chunk))
-        return traversal_pb2.ReceiveDataResponse(
-                status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND, file_bytes=str.encode("chunk"))
+        logger.debug("ReceiveDataRespnse: chunk: {}".format(globals.data_received))
+        for c in globals.data_received:
+            yield traversal_pb2.ReceiveDataResponse(
+                status=traversal_pb2.ReceiveDataResponse.TraversalResponseStatus.FOUND, file_bytes=c)
 
     def RespondData(self, request, context):
         t = threading.Thread(target=self.forward_response_data, args=(request.file_bytes, request.request_id, request.node_ip, request.status, request.path))
