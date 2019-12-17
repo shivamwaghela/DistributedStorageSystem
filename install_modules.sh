@@ -28,6 +28,9 @@ else
     echo "Installing sortedcontainers"
     pip3 install sortedcontainers --user
 
+    echo "Installing numpy"
+    pip3 install numpy --user
+
     exit 0
 fi
 
@@ -58,6 +61,9 @@ else
 
     echo "Installing sortedcontainers"
     pip install sortedcontainers --user
+
+    echo "Installing numpy"
+    pip install numpy --user
 
     exit 0
 fi
