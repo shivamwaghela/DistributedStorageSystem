@@ -20,6 +20,8 @@ import time
 import storage_pb2_grpc
 import rumour_pb2_grpc
 import rumour_pb2
+import recovery_pb2_grpc
+import recovery_pb2
 
 from client import Client
 from server import Greeter
