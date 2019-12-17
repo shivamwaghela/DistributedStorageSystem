@@ -115,6 +115,13 @@ class RecoveryServicer(recovery_pb2_grpc.RecoveryServicer):
         neigh : {}
     }
     """
+    def __init__(self):
+        #telling M/W about adding new node
+        middleware_channel = grpc.insecure_channel(middleware_ip + ":" + str(middleware_port))
+        midddleware_stub = recovery_pb2_grpc.RecoveryStub(middleware_channel)
+        midddleware_stub.sendAdditionOfNodeMessage(recovery_pb2.AdditionalOfNodeRequest(pos = str(globals.my_coordinates),ip = str(globals.my_ip)))
+
+
     def recovery(self,request, context):
         print("Recovery initiated by Middleware Server", request)
 

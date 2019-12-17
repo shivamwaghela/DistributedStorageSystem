@@ -4,6 +4,16 @@ service Recovery {
     rpc sendHoleInfo (SendHoleInfoRequest) returns (SendHoleInfoReply) {};
     rpc sendWholeMesh(SendWholeMeshRequest) returns (SendWholeMeshReply) {};
     rpc startRecovery(StartRecoveryRequest) returns (StartRecoveryReply) {};
+    rpc sendAdditionOfNodeMessage(AdditionalOfNodeRequest) returns (AdditionalOfNodeReply) {};
+}
+
+message AdditionalOfNodeRequest{
+	string pos = 1;
+	string ip = 2;
+}
+
+message AdditionalOfNodeReply{
+	
 }
 
 message SendHoleInfoRequest{
