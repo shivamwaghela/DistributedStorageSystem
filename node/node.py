@@ -28,6 +28,8 @@ from network_manager import NetworkManager
 from node_traversal import Traversal
 from storage_manager import StorageManagerServer
 from pulse import Pulse
+import initiate_server
+from gossip_of_gossip import GossipProtocol
 
 
 def serve():
@@ -91,11 +93,17 @@ if __name__ == "__main__":
 
         hb_memory_thread = threading.Thread(target=memory_server.sendmemory)
         hb_memory_thread.start()
+
+        g = GossipProtocol()
+        time.sleep(5)
+        g.start_threads()
+
         # traversal_thread = threading.Thread(target=send_request)
         # traversal_thread.start()
         pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
         pulse_thread.start()
         server_thread.join()
+
     else:
         if len(sys.argv) != 2:
             print("usage: python3 node/node.py [ipv4 address]")
@@ -119,6 +127,9 @@ if __name__ == "__main__":
         hb_memory_thread.start()
         # traversal_thread = threading.Thread(target=send_request)
         # traversal_thread.start()
+        g = GossipProtocol()
+        time.sleep(5)
+        g.start_threads()
 
         logger.debug("Starting client thread with target greet...")
         client_thread.start()

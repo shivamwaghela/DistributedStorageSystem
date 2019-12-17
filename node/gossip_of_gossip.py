@@ -13,7 +13,7 @@ import grpc
 import ast
 import globals
 
-
+import machine_info
 import grpc
 import time
 import math
@@ -43,7 +43,8 @@ class GossipProtocol:
     listofNeighbors = []
     path = ["(0,0)", "(0,1)", "(0,2)"]
     counter = 1
-    IPaddress = globals.my_ip
+    my_ip = machine_info.get_my_ip()
+    IPaddress =my_ip
     localPort = 21000
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     UDPServerSocket.bind((IPaddress, localPort))
@@ -54,7 +55,7 @@ class GossipProtocol:
         global best_nodes_to_replicate
         best_nodes_to_replicate = []
         print("HERE")
-        self.start_threads()
+        #self.start_threads()
 
     def input_message(self):
         message_to_send = "message"
