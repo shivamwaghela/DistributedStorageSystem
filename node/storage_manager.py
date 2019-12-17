@@ -22,7 +22,8 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
     def replicate_data(self, message_stream_of_chunk_bytes, metadata):
         start_replica()
         time.sleep(5)
-        nodes = ["10.0.0.30","10.0.0.29"]
+        print("GLOBALS --", globals.nodes_for_replication)
+        nodes = ["10.0.0.31"]
         path_one = get_best_path(globals.whole_mesh_dict, nodes[0])
         status_one = replication(path_one, message_stream_of_chunk_bytes, metadata)
         #path_two = get_best_path(globals.whole_mesh_dict, nodes[1])

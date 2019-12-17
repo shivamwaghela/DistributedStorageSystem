@@ -39,10 +39,10 @@ class ReplicationService(replication_pb2_grpc.FileserviceServicer):
         for item in globals.node_connections.connection_dict.items():
             if item[1].node_ip != globals.my_ip and item[1].node_ip not in list_of_neigbors:
                 list_of_neigbors[str(item[1].node_coordinates)] = item[1].node_ip
-        if request.currentpos == len(request.shortest_path) and request.currentpos > 0:
+        if request.currentpos == len(request.shortest_path)-1 and request.currentpos > 0:
             #cache.saveVClock(str(request), str(request))
             #write_to_memory
-            return replication_pb2.ack(success=True, message="Data Replicated.")
+            return replication_pb2.ack(success=True, message="Data Replicated from "+globals.my_ip)
         else:
             forward_coordinates = request.shortest_path[request.currentpos+1]
             print("forward coord =", forward_coordinates)
@@ -64,4 +64,4 @@ class ReplicationService(replication_pb2_grpc.FileserviceServicer):
             forward_resp = forward_stub.ReplicateFile(updated_request, metadata = metadata)
             print("CALLED-03")
             print("forward_resp", forward_resp)
-            return replication_pb2.ack(success=True, message="Data Forwarded.")
+            return replication_pb2.ack(success=True, message="Data Forwarded to "+ forward_server_addr)
