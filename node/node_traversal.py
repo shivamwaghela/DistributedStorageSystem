@@ -63,7 +63,8 @@ class Traversal(traversal_pb2_grpc.TraversalServicer):
         if data_found:
             channel = grpc.insecure_channel(request.requesting_node_ip + ":" + str(globals.port))
             traversal_stub = traversal_pb2_grpc.TraversalStub(channel)
-            for chunk in globals.storage_object.download_list_of_data_chunks_non_rpc():
+            data_received =  globals.storage_object.download_list_of_data_chunks_non_rpc()
+            for chunk in data_received:
                 logger.debug("SendData: chunk: {}".format(chunk))
                 yield traversal_stub.SendData(traversal_pb2.SendDataRequest(
                     file_bytes=str.encode(chunk),
