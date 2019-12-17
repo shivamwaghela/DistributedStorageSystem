@@ -1,5 +1,7 @@
 import os
 import sys
+import time
+from threading import Thread
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,6 +13,10 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 
 import storage_pb2, storage_pb2_grpc
 from memory_manager import MemoryManager
+from initiate_replica import start_replica
+from replicate_data import replication
+from replicate_data import get_best_path
+import globals
 
 DEBUG = 0
 
@@ -19,10 +25,31 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
     def __init__(self, memory_node_bytes, page_memory_size_bytes):
         self.memory_manager = MemoryManager(memory_node_bytes, page_memory_size_bytes)
 
+    def replicate_data(self, message_stream_of_chunk_bytes, metadata):
+        start_replica()
+        time.sleep(5)
+        print("GLOBALS --", globals.nodes_for_replication)
+        list_of_neigbors = []
+        for item in globals.node_connections.connection_dict.items():
+            if item[1].node_ip != globals.my_ip and item[1].node_ip not in list_of_neigbors:
+                list_of_neigbors.append(item[1].node_ip)
+        nodes = list_of_neigbors
+        if len(nodes) > 0:
+            path_one = get_best_path(globals.whole_mesh_dict, nodes[0])
+            status_one = replication(path_one, message_stream_of_chunk_bytes, metadata)
+            #path_two = get_best_path(globals.whole_mesh_dict, nodes[1])
+            #status_two = replication(path_two, message_stream_of_chunk_bytes, metadata)
+            print("First Replication Status ", status_one)
+            #print("Second Replication Status ", status_two)
+        else:
+            print("No nodes for replication")
+
     def upload_chunk_stream(self, request_iterator, context):
+        print("WHOLE MESH DICT =", globals.whole_mesh_dict)
         hash_id = ""
         chunk_size = 0
         number_of_chunks = 0
+        is_replica = "True"
 
         for key, value in context.invocation_metadata():
             if key == "key-hash-id":
@@ -31,12 +58,25 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
                 chunk_size = int(value)
             elif key == "key-number-of-chunks":
                 number_of_chunks = int(value)
+            elif key == "key-is-replica":
+                is_replica = str(value)
 
         assert hash_id != ""
         assert chunk_size != 0
         assert number_of_chunks != 0
-
+        assert is_replica != ""
         success = self.memory_manager.put_data(request_iterator, hash_id, chunk_size, number_of_chunks, False)
+        if is_replica != "False":
+            replMetadata = {
+                'key-hash-id': hash_id,
+                'key-chunk-size': str(chunk_size),
+                'key-number-of-chunks': str(number_of_chunks),
+                'key-is-replica': is_replica
+            }
+
+            message_stream_of_chunk_bytes = self.memory_manager.get_data(hash_id)
+            Thread(target=self.replicate_data, args=(message_stream_of_chunk_bytes, replMetadata)).start()
+
         return storage_pb2.ResponseBoolean(success=success)
 
     def upload_single_chunk(self, request_chunk, context):
@@ -111,4 +151,8 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
         :return: list of data chunks
         """
         return self.memory_manager.get_data(hash_id)
+
+    # def upload_chunk_stream_non_rpc(self, request_iterator, hash_id, chunk_size, number_of_chunks):
+    #     success = self.memory_manager.put_data(request_iterator, hash_id, chunk_size, number_of_chunks, False)
+    #     return success
 

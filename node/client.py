@@ -187,11 +187,13 @@ class Client:
         file_path = "./docs/mesh.png"
         file_size_bytes = os.path.getsize(file_path)
         number_of_chunks = math.ceil(file_size_bytes / chunk_size_payload)
+        is_replica = True
 
         metadata = (
             ('key-hash-id', hash_id),
             ('key-chunk-size', str(chunk_size_payload)),
             ('key-number-of-chunks', str(number_of_chunks)),
+            ('key-is-replica', str(is_replica))
         )
         message_stream_of_chunk_bytes = get_file_chunks(file_path, chunk_size_payload)
 

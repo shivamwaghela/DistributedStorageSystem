@@ -10,7 +10,9 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 
 import globals
 import connection
-
+import hb_server
+import hb_client
+import memory_server
 from node_position import NodePosition
 import greet_pb2_grpc
 import network_manager_pb2_grpc
@@ -18,7 +20,8 @@ import traversal_pb2
 import traversal_pb2_grpc
 import time
 import storage_pb2_grpc
-
+import replication_pb2_grpc
+from replication_service import ReplicationService
 from client import Client
 from server import Greeter
 from network_manager import NetworkManager
@@ -37,6 +40,7 @@ def serve():
     storage_pb2_grpc.add_FileServerServicer_to_server(globals.storage_object, server)
     server.add_insecure_port("[::]:" + str(globals.port))
     logger.info("Server starting at port " + str(globals.port))
+    replication_pb2_grpc.add_FileserviceServicer_to_server(ReplicationService(), server)
     server.start()
     server.wait_for_termination()
 
@@ -78,6 +82,15 @@ if __name__ == "__main__":
         logger.debug("Starting server thread...")
         server_thread = threading.Thread(target=serve)
         server_thread.start()
+
+        hb_server_thread = threading.Thread(target=hb_server.hb_serve)
+        hb_server_thread.start()
+
+        hb_client_thread = threading.Thread(target=hb_client.hb_client)
+        hb_client_thread.start()
+
+        hb_memory_thread = threading.Thread(target=memory_server.sendmemory)
+        hb_memory_thread.start()
         # traversal_thread = threading.Thread(target=send_request)
         # traversal_thread.start()
         # pulse_thread = threading.Thread(target=Pulse.check_neighbor_node_pulse)
@@ -90,9 +103,20 @@ if __name__ == "__main__":
 
         client_thread = threading.Thread(target=Client.greet, args=(sys.argv[1],))
         server_thread = threading.Thread(target=serve)
+
         # for testing storage client only
         #storage_thread = threading.Thread(target=Client.test_upload_data, args=(sys.argv[1],))
+
+        hb_server_thread = threading.Thread(target=hb_server.hb_serve)
+        hb_server_thread.start()
+
         # XXX
+        #traversal_thread = threading.Thread(target=ReceiveRequest, args=(request))
+        hb_client_thread = threading.Thread(target=hb_client.hb_client)
+        hb_client_thread.start()
+
+        hb_memory_thread = threading.Thread(target=memory_server.sendmemory)
+        hb_memory_thread.start()
         # traversal_thread = threading.Thread(target=send_request)
         # traversal_thread.start()
 
