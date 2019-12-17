@@ -130,6 +130,10 @@ class MemoryManager:
 
         pages_to_return = []
 
+        if hash_id not in self.memory_tracker:
+            logger.debug("Hash id not found. Returning empty data for hash_id", hash_id)
+            return pages_to_return
+
         data_pages = self.memory_tracker[hash_id]
         start_read_data = time.time()
 
@@ -160,13 +164,13 @@ class MemoryManager:
         message = ("Not enough pages available to save the data. Pages needed: {}, pages available {}. Available bytes: {}"
                    .format(n, self.get_number_of_pages_available(), self.get_available_memory_bytes()))
         if n > self.get_number_of_pages_available():
-            raise Exception(message)
+            logger.debug(message)
 
         list_indexes_to_used = self.pages_free.get_available_space(n)
         total_time = round(time.time() - start, 6)
 
         if len(list_indexes_to_used) != n:
-            raise Exception("Not enough pages available to save the data. Took %s seconds." % total_time)
+            logger.debug("Not enough pages available to save the data. Took %s seconds." % total_time)
         else:
             logger.debug("Enough pages available to save the data. Took %s seconds." % total_time)
 
