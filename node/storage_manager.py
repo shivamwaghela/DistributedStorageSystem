@@ -2,6 +2,10 @@ import os
 import sys
 import time
 from threading import Thread
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 sys.path.append("../" + os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/utils/')
@@ -13,6 +17,8 @@ from initiate_replica import start_replica
 from replicate_data import replication
 from replicate_data import get_best_path
 import globals
+
+DEBUG = 0
 
 class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
 
