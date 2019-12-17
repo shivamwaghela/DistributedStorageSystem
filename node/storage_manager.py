@@ -146,3 +146,7 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
         """
         return self.memory_manager.get_data(hash_id)
 
+    # def upload_chunk_stream_non_rpc(self, request_iterator, hash_id, chunk_size, number_of_chunks):
+    #     success = self.memory_manager.put_data(request_iterator, hash_id, chunk_size, number_of_chunks, False)
+    #     return success
+

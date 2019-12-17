@@ -9,7 +9,6 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/generated/')
 import replication_pb2
 import replication_pb2_grpc
 import globals
-
 class ReplicationService(replication_pb2_grpc.FileserviceServicer):
 
     def ReplicateFile(self, request, context):
@@ -42,6 +41,7 @@ class ReplicationService(replication_pb2_grpc.FileserviceServicer):
         if request.currentpos == len(request.shortest_path)-1 and request.currentpos > 0:
             #cache.saveVClock(str(request), str(request))
             #write_to_memory
+            #status = globals.storage_object.upload_chunk_stream_non_rpc(request.bytearray, hash_id, chunk_size, number_of_chunks)
             return replication_pb2.ack(success=True, message="Data Replicated from "+globals.my_ip)
         else:
             forward_coordinates = request.shortest_path[request.currentpos+1]
