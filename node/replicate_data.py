@@ -36,7 +36,7 @@ def replication(path_one, message_stream_of_chunk_bytes, metadata):
     #                                         key_number_of_chunks = metadata.key_number_of_chunks,
     #                                         key_is_replica = metadata.key_is_replica)
 
-    request = replication_pb2.FileData(initialReplicaServer=globals.my_ip, bytearray=bytes(message_bytes), vClock="My V Clock", shortest_path=path_one, currentpos=1)
+    request = replication_pb2.FileData(initialReplicaServer=globals.my_ip, bytearray=bytes(message_bytes), vClock="My V Clock", shortest_path=path_one, currentpos=0)
     resp = replicate_stub.ReplicateFile(request, metadata = metadata)
     return resp
 

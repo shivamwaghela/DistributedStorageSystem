@@ -28,7 +28,6 @@ class StorageManagerServer(storage_pb2_grpc.FileServerServicer):
         #path_two = get_best_path(globals.whole_mesh_dict, nodes[1])
         #status_two = replication(path_two, message_stream_of_chunk_bytes, metadata)
         print("First Replication Status ", status_one)
-        sys.exit(0)
         #print("Second Replication Status ", status_two)
 
     def upload_chunk_stream(self, request_iterator, context):

@@ -33,31 +33,35 @@ class ReplicationService(replication_pb2_grpc.FileserviceServicer):
             ('key-number-of-chunks', str(number_of_chunks)),
             ('key-is-replica', str(is_replica))
         )
-
         print("request = ", request.shortest_path[request.currentpos])
-        if request.currentpos == len(request.shortest_path):
+        list_of_neigbors = {}
+        forward_coordinates = request.shortest_path[request.currentpos]
+        for item in globals.node_connections.connection_dict.items():
+            if item[1].node_ip != globals.my_ip and item[1].node_ip not in list_of_neigbors:
+                list_of_neigbors[str(item[1].node_coordinates)] = item[1].node_ip
+        if request.currentpos == len(request.shortest_path) and request.currentpos > 0:
             #cache.saveVClock(str(request), str(request))
             #write_to_memory
             return replication_pb2.ack(success=True, message="Data Replicated.")
         else:
-            forward_coordinates = request.shortest_path[request.currentpos]
+            forward_coordinates = request.shortest_path[request.currentpos+1]
             print("forward coord =", forward_coordinates)
-            list_of_neigbors = {}
-            for item in globals.node_connections.connection_dict.items():
-                if item[1].node_ip != globals.my_ip and item[1].node_ip not in list_of_neigbors:
-                    list_of_neigbors[str(item[1].node_coordinates)] = item[1].node_ip
             print(list_of_neigbors)
             print(list_of_neigbors[str(forward_coordinates)])
             forward_server_addr = list_of_neigbors[forward_coordinates]
             print("forward IP =", forward_server_addr)
+            forward_server_addr= str(forward_server_addr)
             forward_port = globals.port
+            #forward_channel = grpc.insecure_channel(forward_server_addr)
             forward_channel = grpc.insecure_channel(forward_server_addr + ":" + str(forward_port))
+            print("FORWARD CHANNEL = ", forward_channel)
             forward_stub = replication_pb2_grpc.FileserviceStub(forward_channel)
-            request.currentpos += 1
+            print("CALLED")
             updated_request = replication_pb2.FileData(initialReplicaServer=request.initialReplicaServer,
                                                bytearray=request.bytearray,
                                                vClock=request.vClock, shortest_path=request.shortest_path, currentpos=request.currentpos + 1)
-
+            print("CALLED-2")
             forward_resp = forward_stub.ReplicateFile(updated_request, metadata = metadata)
+            print("CALLED-03")
             print("forward_resp", forward_resp)
             return replication_pb2.ack(success=True, message="Data Forwarded.")
