@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+service Recovery {
+    rpc sendHoleInfo (SendHoleInfoRequest) returns (SendHoleInfoReply) {};
+    rpc sendWholeMesh(SendWholeMeshRequest) returns (SendWholeMeshReply) {};
+    rpc startRecovery(StartRecoveryRequest) returns (StartRecoveryReply) {};
+}
+
+message SendHoleInfoRequest{
+  string pos = 1;
+  string neighbors = 2;
+}
+
+message SendHoleInfoReply{
+
+}
+
+message SendWholeMeshRequest{
+  
+}
+
+message SendWholeMeshReply{
+  string wholemesh = 1;
+}
+
+message StartRecoveryRequest{
+  string pos = 1;
+  string neighbors = 2;
+}
+
+message StartRecoveryReply{
+  
+}
