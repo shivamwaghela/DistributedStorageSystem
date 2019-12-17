@@ -43,7 +43,7 @@ class GossipProtocol:
     listofNeighbors = []
     path = ["(0,0)", "(0,1)", "(0,2)"]
     counter = 1
-    IPaddress = globals.my_ip
+    IPaddress = None
     localPort = 21000
     UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     UDPServerSocket.bind((IPaddress, localPort))
@@ -73,7 +73,7 @@ class GossipProtocol:
                 self.counter += 1
                 if self.counter >= 5:
                     BlackListedNodes = []
-                    BlackListedNodes.append(self.IPaddress)
+                    BlackListedNodes.append(globals.my_ip)
                     BlackListedNodes = set(BlackListedNodes)
                     listofNeighbors = self.fetch_all_neighbors()
                     print("listofNeighbors", listofNeighbors)
@@ -106,8 +106,8 @@ class GossipProtocol:
                 time.sleep(1)
                 self.counter += 1
                 if self.counter >= 5:
-                    if self.IPaddress not in BlackListedNodes:
-                        BlackListedNodes.append(self.IPaddress)
+                    if globals.my_ip not in BlackListedNodes:
+                        BlackListedNodes.append(globals.my_ip)
                     print("listofNeighbors", self.listofNeighbors)
                     # listofNeighbors = self.fetch_all_neighbors()
                     # for ip in range(len(listofNeighbors)):
@@ -247,7 +247,7 @@ class GossipProtocol:
                 else:
                     globals.nodes_for_replication.append(best_ip_addresses)
                 continue
-            if str(IPaddress) == self.IPaddress and gossip_flag == False:
+            if str(IPaddress) == globals.my_ip and gossip_flag == False:
                 print("Faaaaaaaaaaaaaaaaaakkkkkk")
                 self.blacklisted_nodes=[]
                 time.sleep(1)
@@ -321,7 +321,7 @@ class GossipProtocol:
                             else:
                                 continue
 
-            elif gossip_flag == False and self.IPaddress != IPaddress:
+            elif gossip_flag == False and globals.my_ip != IPaddress:
                 print("inside false=", self.local_message)
                 self.blacklisted_nodes = []
                 list_of_neighbors = self.fetch_all_neighbors()
